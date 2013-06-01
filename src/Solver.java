@@ -65,7 +65,7 @@ public class Solver {
 					string = string.substring(0, startIndex)+solveString(string.substring(startIndex+1, tempIndex)) + string.substring(tempIndex+1);
 					tempIndex = string.indexOf('(');
 					startIndex = tempIndex;
-					System.out.println("String,index: "+string+" , "+tempIndex);
+					//System.out.println("String,index: "+string+" , "+tempIndex);
 				}
 				else
 					tempIndex++;
@@ -73,8 +73,6 @@ public class Solver {
 
 
 		}
-
-		System.out.println("----------------------------------------------\nSolving math for string: "+ string);
 		
 		ArrayList<Double> numbers = new ArrayList<Double>();
 		ArrayList<String> signs = new ArrayList<String>();
@@ -84,7 +82,7 @@ public class Solver {
 		boolean isNegitive = false;
 		//loop through all of the characters and fill the arrays with the numbers and the signs
 		for(int i = 0; i < string.length();i++){
-			System.out.println("Char: "+string.charAt(i));
+			//System.out.println("Char: "+string.charAt(i));
 					//number character if:
 					//string starts with a negitive
 			if((i==0 && string.charAt(i) == '-') || 
@@ -138,8 +136,8 @@ public class Solver {
 			temp = new StringBuffer();
 		}
 		//print arrays
-		System.out.println(numbers);
-		System.out.println(signs);
+		//System.out.println(numbers);
+		//System.out.println(signs);
 		
 		//make sure they have to correct amount of signs
 		if(numbers.size() != 1 + signs.size()){
