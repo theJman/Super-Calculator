@@ -1,15 +1,16 @@
 package BasicCalculator;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import FunctionStuff.Function;
 import FunctionStuff.SaveFile;
 import MenuBar.CalcMenuBar;
 
@@ -17,8 +18,9 @@ import MenuBar.CalcMenuBar;
 public class CalculatorManager {
 	private static CalculatorManager currentManager;
 	
-	private static HashMap<String,String> memDict;
-	public static HashMap<String,String> getMemDict(){
+	//values need to be sorted according to length of key
+	private static TreeMap<String,String> memDict;
+	public static TreeMap<String,String> getMemDict(){
 		return memDict;
 	}
 	private int currentLineIndex;
@@ -36,7 +38,19 @@ public class CalculatorManager {
 		frame = new CalculatorFrame();
 		textField = frame.getTextField();
 		label = frame.getLabel();
-		memDict = new HashMap<String,String>();
+		memDict = new TreeMap<String, String>(new Comparator<String>() {
+			//sort by key length then by natural ordering if length is the same
+			@Override
+			public int compare(String o1, String o2) {
+				if(o1.length() < o2.length())
+					return 1;
+				else if(o1.length() > o2.length())
+					return -1;
+				return o1.compareTo(o2);
+			}
+			
+		});
+		
 		lastValue = "";
 		previousLines = new ArrayList<String>();
 		currentLineIndex = -1;
@@ -79,7 +93,7 @@ public class CalculatorManager {
 	 * @return Save file of current state
 	 */
 	public SaveFile getSaveFile(){
-		return new SaveFile(Function.getFunctions(), memDict);
+		return null;//new SaveFile(Function.getFunctions(), memDict);
 		
 	}
 	/**
@@ -117,9 +131,9 @@ public class CalculatorManager {
 	public void solve(){
 		
 		try {
-			String eqString = textField.getText();
+			String string = textField.getText();
 			//check for no input
-			if(eqString.length() == 0){
+			if(string.length() == 0){
 				//check to see if user wants to insert a line
 				if(currentLineIndex !=	previousLines.size()-1){
 					textField.setText(label.getText().substring(0, label.getText().indexOf("=")));
@@ -134,37 +148,59 @@ public class CalculatorManager {
 			}
 			//clear display
 			display("",false);
-			
+			//check to see if they want to remove a variable
+			if(string.contains("remove")){
+				if(string.indexOf("remove") != 0){
+					throw new InvalidInputException("Key Word: \"remove\" must be used at the begining of line");
+				}
+				//remove all variables on that line
+				Vector<String> keysToRemove = new Vector<String>();
+				for(String key : memDict.keySet()){
+					while (string.contains(key)) {
+						keysToRemove.add(key);
+						int index = string.indexOf(key);
+						//remove from line
+						string = string.substring(0,index) +  string.substring(index+key.length());
+					}
+				}
+				//remove the variables from the dict
+				for(String key : keysToRemove){
+					memDict.remove(key);
+				}
+				display("Removed variables: "+keysToRemove.toString(),true);
+				textField.setText("");
+				return;
+			}
 			//replace "last" with last answer
-			if(eqString.contains("last")){
-				int index = eqString.indexOf("last");
+			if(string.contains("last")){
+				int index = string.indexOf("last");
 				if(index != 0){
-					eqString = eqString.substring(0,index) + lastValue + eqString.substring(index+4);
+					string = string.substring(0,index) + lastValue + string.substring(index+4);
 				}
 				else{
-					eqString = lastValue + eqString.substring(index+4);
+					string = lastValue + string.substring(index+4);
 				}
 			}
-			String original = new String(eqString);
+			String original = new String(string);
 			
 			//remove spaces
-			if(eqString.substring(eqString.length()-1).equals(" "))
-				eqString = eqString.substring(0,eqString.length()-1);
-			while(eqString.contains(" ")){
+			if(string.substring(string.length()-1).equals(" "))
+				string = string.substring(0,string.length()-1);
+			while(string.contains(" ")){
 				
-				int index = eqString.indexOf(" ");
+				int index = string.indexOf(" ");
 				System.out.println(index);
 				
-				if(eqString.charAt(0) == ' ')
-					eqString = eqString.substring(1);
+				if(string.charAt(0) == ' ')
+					string = string.substring(1);
 				else
-					eqString = eqString.substring(0,index) + eqString.substring(index+1);
+					string = string.substring(0,index) + string.substring(index+1);
 			}
-			System.out.println(eqString);
-			if (eqString.contains("=")) {
-				int index = eqString.indexOf("=");
-				String first = eqString.substring(0, index);
-				String second = eqString.substring(index+1);
+			System.out.println(string);
+			if (string.contains("=")) {
+				int index = string.indexOf("=");
+				String first = string.substring(0, index);
+				String second = string.substring(index+1);
 		
 				second = Solver.solveString(second, memDict);
 				memDict.put(first, second);
@@ -173,33 +209,34 @@ public class CalculatorManager {
 				display(original,false);
 				return;
 			}
-			if(eqString.contains("mem")){
+			else if(string.contains("mem")){
 				String displayText = "";
 				for (String key : memDict.keySet()) {
 					displayText = displayText + " ["+key+"="+memDict.get(key)+"]";
 				}
 				display(displayText, false);
+				setTextField("");
 				return;
 			}
 			//check to see if a function is present
 			//
 			/*
 			for(Function f : Function.getFunctions()){
-				while(eqString.contains(f.getName()+"(")){
+				while(string.contains(f.getName()+"(")){
 					System.out.println("contains function-----start------");
-					int beginIndex = eqString.indexOf('(', eqString.indexOf(f.getName()));
-					int endIndex = eqString.indexOf(')', beginIndex);
-					String args = eqString.substring(beginIndex+1, endIndex);
+					int beginIndex = string.indexOf('(', string.indexOf(f.getName()));
+					int endIndex = string.indexOf(')', beginIndex);
+					String args = string.substring(beginIndex+1, endIndex);
 					String[] tempArgArray = args.split(",");
 					if(f.getNumOfArgs() != tempArgArray.length){
 						//incorrect amount of args
 						throw new InvalidInputException("Invalid number of args for function:"+f.getName());
 					}
 					//correct num of args so replace function with the answer to it
-					System.out.println("eqString to replace: "+eqString.substring(eqString.indexOf(f.getName()), endIndex+1));
+					System.out.println("string to replace: "+string.substring(string.indexOf(f.getName()), endIndex+1));
 					System.out.println(f.solveFunction(tempArgArray));
-					eqString = eqString.substring(0, eqString.indexOf(f.getName())) +  f.solveFunction(tempArgArray) + eqString.substring(endIndex+1);
-					System.out.println("final: "+ eqString);
+					string = string.substring(0, string.indexOf(f.getName())) +  f.solveFunction(tempArgArray) + string.substring(endIndex+1);
+					System.out.println("final: "+ string);
 
 					System.out.println("contains function\n-----end------");
 
@@ -207,9 +244,9 @@ public class CalculatorManager {
 			}
 			*/
 			//calls solve method from solver class
-			String answer = Solver.solveString(eqString,memDict);
+			String answer = Solver.solveString(string,memDict);
 			System.out.println("FINAL: "+answer);
-			eqString = eqString + " = " + answer;
+			string = string + " = " + answer;
 			setTextField("");
 			lastValue = answer;
 			if (!label.getText().contains("Error")) {

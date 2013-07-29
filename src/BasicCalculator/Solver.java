@@ -1,6 +1,9 @@
 package BasicCalculator;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import FunctionStuff.Function;
 
@@ -13,10 +16,12 @@ public class Solver {
 	 * @return answer to the function
 	 * @throws InvalidInputException
 	 */
-	public static String solveString(String string, HashMap<String, String> memDict) throws InvalidInputException{
+	public static String solveString(String string, TreeMap<String, String> memDict) throws InvalidInputException{
 		if(string == null || string.length() == 0)
 			throw new InvalidInputException("Can not solve a blank string");
-		//replace variables
+		
+		//replace variables 
+		//replaces the longest ones first to avoid short variables breaking up long ones
 		if(memDict != null){
 			//check for variables
 			for(String key : memDict.keySet()){
@@ -26,10 +31,14 @@ public class Solver {
 					
 				}
 			}
+		
 		}
 		
 		System.out.println("Starting String: "+ string);
-		
+		//make sure number is in front of round
+				if(string.indexOf("round") == 0)
+					string = "1"+string;
+				
 		
 		//doesn't start with a number so add one
 		if(string.charAt(0) != '-' &&
@@ -77,7 +86,25 @@ public class Solver {
 			while(string.contains(f.getName()+"(")){
 				System.out.println("contains function-----start------");
 				int beginIndex = string.indexOf('(', string.indexOf(f.getName()));
-				int endIndex = string.indexOf(')', beginIndex);
+				//count parenthesis
+				//count will start at 1 because the first index is a start paren and finish when the count is back to 0 by subtractin by
+				//each end paren
+				int count = 0,endIndex = -1;
+				for(int i = beginIndex; i<string.length();i++){
+					if(string.charAt(i) == '(')
+						count++;
+					else if(string.charAt(i) == ')')
+						count--;
+					if(count == 0){
+						//found the right index
+						endIndex = i;
+						//since we already found the index loop is pointless
+						break;
+					}
+				}
+				//make sure we found the right index
+				if(endIndex == -1)
+					throw new InvalidInputException("Check your parenthesis");
 				String args = string.substring(beginIndex+1, endIndex);
 				String[] tempArgArray = args.split(",");
 				if(f.getNumOfArgs() != tempArgArray.length){
@@ -123,7 +150,7 @@ public class Solver {
 			int startIndex = tempIndex;
 
 			while(tempIndex < string.length() && tempIndex != -1){
-				System.out.println("loop");
+			
 				if(string.charAt(tempIndex) == '(')
 					depthOfParen++;
 				else if(string.charAt(tempIndex) == ')'){
@@ -813,6 +840,20 @@ public class Solver {
 			numbers.remove(index);
 			numbers.add(index, num);
 			
+		}
+		//rounding
+		while(signs.contains("round")){
+			int index = signs.indexOf("round");
+			int place = (int) (double)numbers.get(index);
+			if(place == 0)place = 1;
+			double num = numbers.get(index+1);
+			num *= place;
+			num = Math.round(num);
+			num /= place;
+			signs.remove(index);
+			numbers.remove(index);
+			numbers.remove(index);
+			numbers.add(index, num);
 		}
 		
 		//check to see if there are still signs left if so then the sign in not supported
