@@ -2,10 +2,8 @@ package FunctionStuff;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.Vector;
 
-import BasicCalculator.CalculatorManager;
 import BasicCalculator.InvalidInputException;
 import BasicCalculator.Solver;
 /**
@@ -138,7 +136,7 @@ public class Function implements Serializable{
 				break;
 			}
 			//make sure there are no errors when solving
-			Solver.solveString(stringToSolve, CalculatorManager.getMemDict());
+			Solver.solveString(stringToSolve);
 			
 		} catch (InvalidInputException e) {
 			//function didn't work so throw an exception
@@ -226,7 +224,7 @@ public class Function implements Serializable{
 		}
 		System.out.println("with args: "+stringToSolve);
 		
-		return Solver.solveString(stringToSolve, CalculatorManager.getMemDict());
+		return Solver.solveString(stringToSolve);
 	}
 	
 }

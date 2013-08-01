@@ -13,7 +13,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import BasicCalculator.CalcTextField;
-import BasicCalculator.CalculatorManager;
+import BasicCalculator.CalculatorFrame;
+import BasicCalculator.CalculatorPanel;
 
 
 public class FunctionPanel extends JPanel {
@@ -34,19 +35,20 @@ public class FunctionPanel extends JPanel {
 	private JTextField tfFormula = new JTextField("");
 	private JTextField tfName = new JTextField("");
 	
+	private CalculatorPanel panel;
+	
 	private Function funct;
 	/**
 	 * Creates a new FunctionPanel
 	 * @param loc location of panel
 	 * @param f Function for panel to display, null if creating a new function
-	 * @param manager Calculator manager used to set displays
 	 */
-	public FunctionPanel(Point loc, Function f){
+	public FunctionPanel(Point loc, Function f, CalculatorPanel panel){
 		funct = f;
 		setBounds(loc.x, loc.y, 335, 210);
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		setLayout(null);
-		
+		this.panel = panel;
 		lblName.setBounds(5,5,50,20);
 		add(lblName);
 		lblFormula.setBounds(5, 35, 70, 20);
@@ -139,19 +141,19 @@ public class FunctionPanel extends JPanel {
 	 * Saves the function entered by the user whether it be creating a new one or changing a current one
 	 */
 	private void savePressed(){
-		CalculatorManager manager = CalculatorManager.getManager();
+		
 		System.out.println("name form "+tfName.getText()+" "+tfFormula.getText());
 		if (funct == null){
 			try {
 				new Function(tfName.getText(), tfFormula.getText());
 				System.out.println("Save successful");
-				manager.display("Save successful for: " +tfName.getText(), true);
+				panel.display("Save successful for: " +tfName.getText(), true);
 				//update all the menus if save was successful
-				manager.getFrame().updateMenuBar();
-				CalculatorManager.getManager().getFrame().showButtonPanel();
+				panel.updateMenuBar();
+				panel.showButtonPanel();
 			} catch (Exception e) {
-				if(manager != null)
-					manager.error(e.getMessage(),true);
+				if(panel != null)
+					panel.error(e.getMessage(),true);
 				e.printStackTrace();
 			}
 		}
@@ -161,18 +163,18 @@ public class FunctionPanel extends JPanel {
 				//if name is empty dont save empty function
 				if(!tfName.getText().isEmpty()){
 					new Function(tfName.getText(), tfFormula.getText());
-					manager.display("Save successful for: " +tfName.getText(), true);
+					panel.display("Save successful for: " +tfName.getText(), true);
 				}
 				else
-					manager.display("Successfully deleted: " +funct.getName(), true);
+					panel.display("Successfully deleted: " +funct.getName(), true);
 				System.out.println("Save successful");
 				//update all the menus if save was successful
-				manager.getFrame().updateMenuBar();
-				CalculatorManager.getManager().getFrame().showButtonPanel();
+				panel.updateMenuBar();
+				panel.showButtonPanel();
 
 			} catch (Exception e) {
-				if(manager != null)
-					manager.error(e.getMessage(),true);
+				if(panel != null)
+					panel.error(e.getMessage(),true);
 				e.printStackTrace();
 			}
 		}
@@ -182,7 +184,7 @@ public class FunctionPanel extends JPanel {
 		//if creating a new function, the button functions as a back button
 		if(funct != null){
 			//add to textfield to be solved
-			CalcTextField tf = CalculatorManager.getManager().getFrame().getTextField();
+			CalcTextField tf = panel.getTextField();
 			switch (funct.getNumOfArgs()) {
 			case 4:
 				tf.setText(tf.getText()+""+funct.getName()+"("+tfArg1.getText()+","+tfArg2.getText()+","+tfArg3+","+tfArg4+")");
@@ -202,6 +204,6 @@ public class FunctionPanel extends JPanel {
 				break;
 			}
 		}
-		CalculatorManager.getManager().getFrame().showButtonPanel();
+		panel.showButtonPanel();
 	}
 }

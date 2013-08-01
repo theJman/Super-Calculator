@@ -1,139 +1,162 @@
 package BasicCalculator;
 
-import java.io.Serializable;
+import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
 
 import FunctionStuff.Function;
-import FunctionStuff.SaveFile;
+import FunctionStuff.FunctionPanel;
 import MenuBar.CalcMenuBar;
 
-
-public class CalculatorManager implements Serializable {
-	private static final long serialVersionUID = -2963241871858676440L;
-
-	private static CalculatorManager currentManager;
+public class CalculatorPanel extends JPanel {
+	private static final long serialVersionUID = 4995424473712070286L;
 	
-	//values need to be sorted according to length of key
-	private static TreeMap<String,String> memDict;
-	public static TreeMap<String,String> getMemDict(){
-		return memDict;
-	}
-	private int currentLineIndex;
-	private CalculatorFrame frame;
 	private JLabel label;
-	private String lastValue;
-	private ArrayList<String> previousLines;
+	private CalcMenuBar menuBar;
+	private FunctionPanel functionPanel;
 	private CalcTextField textField;
+	private CalcButtonsPanel buttonPanel;
+	private CalculatorFrame frame;
+	//stuff for navigating previous commands 
+	private int currentLineIndex;
+	private ArrayList<String> previousLines;
+	private String lastValue;
 	
 	/**
-	 * Creates a new calculator manager that manages the calculator by creating the frame and housing major functions
+	 * Creates a new calculator panel with a calculator frame
+	 * @param frm
 	 */
-	public CalculatorManager(){
+	public CalculatorPanel(CalculatorFrame frm){
 		//create frame
-		frame = new CalculatorFrame();
-//		textField = frame.getTextField();
-//		label = frame.getLabel();
-		memDict = new TreeMap<String, String>(new Comparator<String>() {
-			//sort by key length then by natural ordering if length is the same
-			@Override
-			public int compare(String o1, String o2) {
-				if(o1.length() < o2.length())
-					return 1;
-				else if(o1.length() > o2.length())
-					return -1;
-				return o1.compareTo(o2);
-			}
-			
-		});
+		setBounds(0, 0, 350, 320);
+		setLayout(null);
+		frame = frm;
+		//create subviews
+		menuBar = new CalcMenuBar(this);
+		menuBar.setBounds(0, 0, 350, 20);
+		label = new JLabel(" Welcome");
+		label.setBounds(8, 53, 333, 18);
+		label.setBorder(LineBorder.createBlackLineBorder());
+		textField = new CalcTextField();
+		textField.setBounds(5, 30, 340, 20);
+		textField.setFocusable(true);
+		buttonPanel = new CalcButtonsPanel(this);
+		buttonPanel.setLocation(7, 80);
+		add(buttonPanel);
+		add(menuBar);
+		//add(buttonPanel);
+		add(textField);
+		add(label);
+		
+		
+		//create function panel
+		try {
+			//functionPanel = new FunctionPanel(new Point(7,80),new Function("", "(1)(2)(3)(4)"),CalculatorManager.getManager());
+			functionPanel = new FunctionPanel(new Point(7,80), null,this);
+			functionPanel.setVisible(false);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		add(functionPanel);
 		
 		lastValue = "";
 		previousLines = new ArrayList<String>();
 		currentLineIndex = -1;
-		//open the window
-//		frame.open();
 	}
 
 	/**
-	 * Displays a message to the user
-	 * @param message message to show
-	 * @param showDialog true if you want to show a pop up window
+	 * 
+	 * @return the displaylabel
 	 */
-	public void display(String message,boolean showDialog){
-		updateWidth();
-		label.setText(message);
-		if(showDialog)
-			JOptionPane.showMessageDialog(frame, message, "Super Calculator", JOptionPane.INFORMATION_MESSAGE);
-		updateWidth();
+	public JLabel getLabel(){
+		return label;
 	}
 	/**
-	 * Displays an error message in the label and displays an error dialog box
-	 * @param message error message
-	 * @param showDialog true to show error dialog
+	 * 
+	 * @return the editable textfield
 	 */
-	public void error(String message, boolean showDialog){
-		display("Error: "+message,false);
-		if(showDialog)
-			JOptionPane.showMessageDialog(frame, "Error: "+message, "Error", JOptionPane.ERROR_MESSAGE);
+	public CalcTextField getTextField(){
+		return textField;
+	}
+	/**
+	 * 
+	 * @return the calcMenuBar
+	 */
+	public CalcMenuBar getCalcMenuBar(){
+		return menuBar;
+	}
+	/**
+	 * Shows the function panel with a specific function
+	 * @param f function to show, null if creating a new function
+	 */
+	public void showFunctionPanel(Function f){
+		buttonPanel.setVisible(false);
+		functionPanel.setVisible(true);
+		functionPanel.changeFunction(f);
+	}
+	/**
+	 * Shows the button panel and hides the function panel
+	 */
+	public void showButtonPanel(){
+		buttonPanel.setVisible(true);
+		functionPanel.setVisible(false);
+	}
+	/**
+	 * Updates the menubar items
+	 */
+	public void updateMenuBar(){
+		menuBar.updateFunctions();		
+	}
+	/**
+	 * Updates the width of the label and textfield relitive to the size of the window
+	 */
+	public void updateWidth(){
+		
+		String labeltext = textField.getText();
+		if(labeltext.length() < label.getText().length())
+			labeltext = label.getText();
+		if(labeltext.length()>26)
+		{
+			int l = labeltext.length();
+			int w = 350;
+			while(l-35 > 0){
+				w+=8;
+				l--;
+			}
+			extendside(w);
+		}
+		else
+			extendside(350);
+		
+	}
+	private void extendside(int width){
+		JFrame f = frame;
+		f.setBounds(f.getLocation().x, f.getLocation().y, width, f.getHeight());
+		JTextField tf = textField;
+		JLabel l = label;
+		tf.setBounds(tf.getLocation().x, tf.getLocation().y, f.getWidth()-11, tf.getHeight());
+		l.setBounds(l.getLocation().x, l.getLocation().y, f.getWidth()-17, l.getHeight());
+		//update menubar
+		CalcMenuBar mBar = menuBar;
+		mBar.setBounds(0, 0, f.getWidth(), 20);
 	}
 	
-	/**
-	 * 
-	 * @return the current calculator frame
-	 */
-	public CalculatorFrame getFrame(){
-		return frame;
-	}
-	/**
-	 * 
-	 * @return Save file of current state
-	 */
-	public SaveFile getSaveFile(){
-		return new SaveFile(Function.getFunctions(), memDict);
-		
-	}
-	/**
-	 * moves display down or up 
-	 * @param down true to move down, false to move up
-	 */
-	public void moveLine(boolean down){
-		
-		if(down && currentLineIndex > 0){
-			currentLineIndex--;
-			display(previousLines.get(currentLineIndex),false);
-		}
-		else if(!down && currentLineIndex < previousLines.size()-1){
-			currentLineIndex++;
-			display(previousLines.get(currentLineIndex),false);
-		}
-	}
-	/**
-	 * 
-	 * @param text text to put in the text field
-	 */
-	public void setTextField(String text){
-		textField.setText(text);
-	}
-	/**
-	 * Appends text to the text field
-	 * @param text 
-	 */
-	public void addToTextField(String text){
-		textField.addText(text);
-	}
 	/**
 	 * Solves and displays answer to eq in textfield
 	 */
 	public void solve(){
 		
 		try {
+			TreeMap<String,String> memDict = frame.getMemDict();
 			String string = textField.getText();
 			//check for no input
 			if(string.length() == 0){
@@ -205,7 +228,7 @@ public class CalculatorManager implements Serializable {
 				String first = string.substring(0, index);
 				String second = string.substring(index+1);
 		
-				second = Solver.solveString(second, memDict);
+				second = Solver.solveString(second);
 				memDict.put(first, second);
 				System.out.println("Key: ["+first +"] value: ["+second+"]");
 				setTextField("");
@@ -246,8 +269,10 @@ public class CalculatorManager implements Serializable {
 				}
 			}
 			*/
+			
+			
 			//calls solve method from solver class
-			String answer = Solver.solveString(string,memDict);
+			String answer = Solver.solveString(string);
 			System.out.println("FINAL: "+answer);
 			string = string + " = " + answer;
 			setTextField("");
@@ -267,40 +292,55 @@ public class CalculatorManager implements Serializable {
 		updateWidth();
 	}
 	/**
-	 * Updates the width of the label and textfield relitive to the size of the window
+	 * 
+	 * @param text text to put in the text field
 	 */
-	public void updateWidth(){
+	public void setTextField(String text){
+		textField.setText(text);
+	}
+	/**
+	 * Appends text to the text field
+	 * @param text 
+	 */
+	public void addToTextField(String text){
+		textField.addText(text);
+	}
+	/**
+	 * moves display down or up 
+	 * @param down true to move down, false to move up
+	 */
+	public void moveLine(boolean down){
 		
-		String labeltext = textField.getText();
-		if(labeltext.length() < label.getText().length())
-			labeltext = label.getText();
-		if(labeltext.length()>26)
-		{
-			int l = labeltext.length();
-			int w = 350;
-			while(l-35 > 0){
-				w+=8;
-				l--;
-			}
-			extendside(w);
+		if(down && currentLineIndex > 0){
+			currentLineIndex--;
+			display(previousLines.get(currentLineIndex),false);
 		}
-		else
-			extendside(350);
-		
+		else if(!down && currentLineIndex < previousLines.size()-1){
+			currentLineIndex++;
+			display(previousLines.get(currentLineIndex),false);
+		}
 	}
-	private void extendside(int width){
-		JFrame f = frame;
-		f.setBounds(f.getLocation().x, f.getLocation().y, width, f.getHeight());
-		JTextField tf = textField;
-		JLabel l = label;
-		tf.setBounds(tf.getLocation().x, tf.getLocation().y, f.getWidth()-11, tf.getHeight());
-		l.setBounds(l.getLocation().x, l.getLocation().y, f.getWidth()-17, l.getHeight());
-		//update menubar
-		CalcMenuBar mBar = frame.getCalcMenuBar();
-		mBar.setBounds(0, 0, f.getWidth(), 20);
+	/**
+	 * Displays a message to the user
+	 * @param message message to show
+	 * @param showDialog true if you want to show a pop up window
+	 */
+	public void display(String message,boolean showDialog){
+		updateWidth();
+		label.setText(message);
+		if(showDialog)
+			JOptionPane.showMessageDialog(frame, message, "Super Calculator", JOptionPane.INFORMATION_MESSAGE);
+		updateWidth();
 	}
-	
-	
-	
+	/**
+	 * Displays an error message in the label and displays an error dialog box
+	 * @param message error message
+	 * @param showDialog true to show error dialog
+	 */
+	public void error(String message, boolean showDialog){
+		display("Error: "+message,false);
+		if(showDialog)
+			JOptionPane.showMessageDialog(frame, "Error: "+message, "Error", JOptionPane.ERROR_MESSAGE);
+	}
 	
 }

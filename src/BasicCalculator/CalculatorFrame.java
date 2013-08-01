@@ -1,30 +1,31 @@
 package BasicCalculator;
-import java.awt.Point;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.util.TreeMap;
+
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.border.LineBorder;
-import FunctionStuff.Function;
-import FunctionStuff.FunctionPanel;
-import MenuBar.CalcMenuBar;
 
 /**
  * @author JeremyLittel
  *
  */
 public class CalculatorFrame extends JFrame {
-	private static final long serialVersionUID = 1L;
 
-	private JLabel label;
+	private static final long serialVersionUID = -5908008666274025806L;
+	private static CalculatorFrame mainCalcFrame;
+	//values need to be sorted according to length of key
+	private static TreeMap<String,String> memDict;
+	public static TreeMap<String,String> getMemDict(){
+		if(memDict == null)
+			memDict = new TreeMap<String, String>(new MemDictComparator());
+		return memDict;
+	}
+	public static void setMemDict(TreeMap<String,String> map){
+		memDict = map;
+	}
 	
-	private CalcMenuBar menuBar;
-	private FunctionPanel functionPanel;
-	private CalcTextField textField;
-	private CalcButtonsPanel buttonPanel;
+	private CalculatorPanel calcPanel;
+
 	/**
-	 * Creates a new Calculator Frame
+	 * Creates a new Calculator Frame with a calc panel
 	 */
 	public CalculatorFrame(){
 		//create frame
@@ -33,85 +34,26 @@ public class CalculatorFrame extends JFrame {
 		setTitle("Super Calculator");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setResizable(false);		
-		//create subviews
-		menuBar = new CalcMenuBar();
-		menuBar.setBounds(0, 0, 350, 20);
-		label = new JLabel(" Welcome");
-		label.setBounds(8, 53, 333, 18);
-		label.setBorder(LineBorder.createBlackLineBorder());
-		textField = new CalcTextField();
-		textField.setBounds(5, 30, 340, 20);
-		textField.setFocusable(true);
-		buttonPanel = new CalcButtonsPanel();
-		buttonPanel.setLocation(7, 80);
-		add(buttonPanel);
-		add(menuBar);
-		//add(buttonPanel);
-		add(textField);
-		add(label);
+		calcPanel = new CalculatorPanel(this);
+		add(calcPanel);
 		
-		
-		//create function panel
-		try {
-			//functionPanel = new FunctionPanel(new Point(7,80),new Function("", "(1)(2)(3)(4)"),CalculatorManager.getManager());
-			functionPanel = new FunctionPanel(new Point(7,80), null);
-			functionPanel.setVisible(false);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		add(functionPanel);
-		
-	}
-	/**
-	 * Opens the frame
-	 */
-	public void open(){
-
 		setVisible(true);
 	}
+	private CalculatorPanel getCalcPanel(){
+		return calcPanel;
+	}
 	
-	/**
-	 * 
-	 * @return the displaylabel
-	 */
-	public JLabel getLabel(){
-		return label;
+	
+	
+	
+	
+	public static CalculatorFrame getFrame(){
+		return mainCalcFrame;
 	}
-	/**
-	 * 
-	 * @return the editable textfield
-	 */
-	public CalcTextField getTextField(){
-		return textField;
+	public static CalculatorPanel getPanel(){
+		return getFrame().getCalcPanel();
 	}
-	/**
-	 * 
-	 * @return the calcMenuBar
-	 */
-	public CalcMenuBar getCalcMenuBar(){
-		return menuBar;
-	}
-	/**
-	 * Shows the function panel with a specific function
-	 * @param f function to show, null if creating a new function
-	 */
-	public void showFunctionPanel(Function f){
-		buttonPanel.setVisible(false);
-		functionPanel.setVisible(true);
-		functionPanel.changeFunction(f);
-	}
-	/**
-	 * Shows the botton panel and hides the function panel
-	 */
-	public void showButtonPanel(){
-		buttonPanel.setVisible(true);
-		functionPanel.setVisible(false);
-	}
-	/**
-	 * Updates the menubar items
-	 */
-	public void updateMenuBar(){
-		menuBar.updateMenus();		
+	public static void main(String[] args){
+		mainCalcFrame = new CalculatorFrame();
 	}
 }

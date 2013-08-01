@@ -1,10 +1,6 @@
 package BasicCalculator;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.TreeMap;
-import java.util.Vector;
-
 import FunctionStuff.Function;
 
 
@@ -12,33 +8,33 @@ public class Solver {
 	/**
 	 * Solves a math function in the format of a string and returns a number in the format of a string
 	 * @param string
-	 * @param memDict map of the variables, this can be null
 	 * @return answer to the function
 	 * @throws InvalidInputException
 	 */
-	public static String solveString(String string, TreeMap<String, String> memDict) throws InvalidInputException{
+	public static String solveString(String string) throws InvalidInputException{
+		TreeMap<String,String> memDict = CalculatorFrame.getMemDict();
 		if(string == null || string.length() == 0)
 			throw new InvalidInputException("Can not solve a blank string");
+
 		
+		System.out.println("Starting String: "+ string);
+		//make sure number is in front of round
+		if(string.indexOf("round") == 0)
+			string = "1"+string;
+
 		//replace variables 
 		//replaces the longest ones first to avoid short variables breaking up long ones
-		if(memDict != null){
+		if(memDict != null && memDict.size() > 0){
 			//check for variables
 			for(String key : memDict.keySet()){
 				while (string.contains(key)) {
 					int index = string.indexOf(key);
 					string = string.substring(0,index) + memDict.get(key) + string.substring(index+key.length());
-					
+
 				}
 			}
-		
+
 		}
-		
-		System.out.println("Starting String: "+ string);
-		//make sure number is in front of round
-				if(string.indexOf("round") == 0)
-					string = "1"+string;
-				
 		
 		//doesn't start with a number so add one
 		if(string.charAt(0) != '-' &&
@@ -157,7 +153,7 @@ public class Solver {
 					depthOfParen--;
 				}
 				if(depthOfParen==0){
-					string = string.substring(0, startIndex)+solveString(string.substring(startIndex+1, tempIndex), memDict) + string.substring(tempIndex+1);
+					string = string.substring(0, startIndex)+solveString(string.substring(startIndex+1, tempIndex)) + string.substring(tempIndex+1);
 					tempIndex = string.indexOf('(');
 					startIndex = tempIndex;
 					//System.out.println("String,index: "+string+" , "+tempIndex);
