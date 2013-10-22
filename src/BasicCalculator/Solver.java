@@ -15,7 +15,7 @@ public class Solver {
 		TreeMap<String,String> memDict = CalculatorFrame.getMemDict();
 		if(string == null || string.length() == 0)
 			throw new InvalidInputException("Can not solve a blank string");
-
+		
 		
 		System.out.println("Starting String: "+ string);
 		//make sure number is in front of round
@@ -60,10 +60,27 @@ public class Solver {
 		}
 		
 		//check for e
-		while(string.contains("e")){
-			int index = string.indexOf("e");
-			string = string.substring(0,index) + Math.E + string.substring(index+1);
+		int countE = 0;
+		for(int i = 0; i<string.length();i++){
+			if(string.charAt(i) == 'e')
+				countE++;
 		}
+		//make sure the e isn't used in a word
+		int lastEIndex = -1;
+		for(int i = 0; i<=countE;i++){
+			int index = string.indexOf('e', lastEIndex);
+			lastEIndex = index;
+			if(index == -1)
+				continue;
+			if(index>0 && !Character.isLetter(string.charAt(index-1)) && index<string.length()-2 && !Character.isLetter(string.charAt(index+1)))
+				string = string.substring(0,index) + Math.E + string.substring(index+1);
+			else if(index==0 && !Character.isLetter(string.charAt(index+1)))
+				string = string.substring(0,index) + Math.E + string.substring(index+1);
+			else if(index==string.length()-1 && !Character.isLetter(string.charAt(index-1)))
+				string = string.substring(0,index) + Math.E + string.substring(index+1);
+
+		}
+		
 		//check for rand
 		while(string.contains("rand")){
 			int index = string.indexOf("rand");
@@ -74,7 +91,63 @@ public class Solver {
 			int index = string.indexOf("pi");
 			string = string.substring(0,index) + Math.PI + string.substring(index+2);
 		}
-		
+		//check for summations
+		//
+		//
+		if(string.contains("sum(")){
+			System.out.println("summation");
+			//get index of closing paren
+			int parenCount = 0;
+			int commaCheck = 0;
+			int lastIndex = -1;
+			int openParenCount = 0;
+			for(int i = string.indexOf("sum(");i<string.length();i++){
+				if(string.charAt(i) == '('){
+					parenCount++;
+					openParenCount++;
+				}
+				else if(string.charAt(i) == ')'){
+					parenCount--;
+					if(parenCount == 0){
+						lastIndex = i;
+						break;
+					}
+				}
+				else if(string.charAt(i) == ',')
+					commaCheck++;
+			}
+			//make sure input is valid
+			if(lastIndex == -1)
+				throw new InvalidInputException("Check Parenthesis in summation function.");
+			if(commaCheck != 2)
+				throw new InvalidInputException("Summation function requires 3 arguments seperated by commas");
+			//call summation method with arguments
+			//get arguments
+			int index1 = string.indexOf("sum(")+4;
+			int index2 = string.indexOf(',', index1);
+			String arg1 = string.substring(index1, index2);
+			int temp = index1;
+			index1=index2+1;
+			index2=string.indexOf(',',index1);
+			String arg2 = string.substring(index1, index2);
+			index1=index2+1;
+			index2=string.indexOf(')',index1);
+			String arg3 = string.substring(index1, index2);
+			
+			int start,count;
+			try{
+				start = Integer.parseInt(arg1);
+				count = Integer.parseInt(arg2);
+			}
+			catch(Exception e){
+				throw new InvalidInputException("First two arguments in summation function must be numbers.");
+			}
+			
+			string = string.substring(0, string.indexOf("sum(")) + summation(start, count, 1, arg3)+string.substring(1+string.indexOf(')', string.indexOf("sum(")));
+		}
+		//
+		//
+		//
 		//check for functions
 		//
 		//
@@ -83,7 +156,7 @@ public class Solver {
 				System.out.println("contains function-----start------");
 				int beginIndex = string.indexOf('(', string.indexOf(f.getName()));
 				//count parenthesis
-				//count will start at 1 because the first index is a start paren and finish when the count is back to 0 by subtractin by
+				//count will start at 1 because the first index is a start paren and finish when the count is back to 0 by subtraction by
 				//each end paren
 				int count = 0,endIndex = -1;
 				for(int i = beginIndex; i<string.length();i++){
@@ -867,6 +940,31 @@ public class Solver {
 			retVal = ""+numbers.get(0);
 		}
 		return retVal;
+	}
+	/**
+	 * Preforms a summation
+	 * @param start start number
+	 * @param count amount of additions
+	 * @param incement
+	 * @param string formula in whitch the letter 'x' will be replaced with the number
+	 * @return
+	 * @throws InvalidInputException
+	 */
+	public static String summation(int start, int count,double incement,final String string) throws InvalidInputException{
+		double number = 0;
+		for(int i = start; i < start+count; i+=incement){
+			//swap x if needed
+			String temp = string;
+			while(temp.contains("x")){
+				int index = temp.indexOf('x');
+				if(index == temp.length()-1)
+					temp = temp.substring(0, index)+"("+i+")";
+				else
+					temp = temp.substring(0, index)+"("+i+")"+temp.substring(index+1);	
+			}
+			number += Double.parseDouble(solveString(temp));
+		}
+		return ""+number;
 	}
 }
 	

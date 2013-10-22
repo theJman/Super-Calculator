@@ -68,7 +68,7 @@ public class CalculatorPanel extends JPanel {
 		}
 		add(functionPanel);
 		
-		lastValue = "";
+		lastValue = null;
 		previousLines = new ArrayList<String>();
 		currentLineIndex = -1;
 	}
@@ -199,6 +199,8 @@ public class CalculatorPanel extends JPanel {
 			}
 			//replace "last" with last answer
 			if(string.contains("last")){
+				if(lastValue == null)
+					throw new InvalidInputException("No last value to use.");
 				int index = string.indexOf("last");
 				if(index != 0){
 					string = string.substring(0,index) + lastValue + string.substring(index+4);

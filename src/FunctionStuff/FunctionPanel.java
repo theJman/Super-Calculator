@@ -81,7 +81,7 @@ public class FunctionPanel extends JPanel {
 		tfArg1.setBounds(90, 65, 50, 20);
 		lblArgs.setBounds(5, 65, 90, 20);
 		//make text area like a label
-		lblHowTo = new JTextArea("To create a function enter the formula for it in the\nformula box. For the peramiters use the formant\n\"(1)\" for the first peramiter and \"(2)\" for the second\nand so on up to 4.\nEx. (1) * (2) = arg1 * arg2", 3, 10);
+		lblHowTo = new JTextArea("To create a function enter the formula for it in the\nformula box. For the peramiters use the formant\n\"(A1)\" for the first peramiter and \"(A2)\" for the second\nand so on up to 4.\nEx. (A1) * (A2) = arg1 * arg2", 3, 10);
 		lblHowTo.setEditable(false);
 		lblHowTo.setOpaque(false);
 		lblHowTo.setFocusable(false);
@@ -187,10 +187,10 @@ public class FunctionPanel extends JPanel {
 			CalcTextField tf = panel.getTextField();
 			switch (funct.getNumOfArgs()) {
 			case 4:
-				tf.setText(tf.getText()+""+funct.getName()+"("+tfArg1.getText()+","+tfArg2.getText()+","+tfArg3+","+tfArg4+")");
+				tf.setText(tf.getText()+""+funct.getName()+"("+tfArg1.getText()+","+tfArg2.getText()+","+tfArg3.getText()+","+tfArg4.getText()+")");
 				break;
 			case 3:
-				tf.setText(tf.getText()+""+funct.getName()+"("+tfArg1.getText()+","+tfArg2.getText()+","+tfArg3+")");
+				tf.setText(tf.getText()+""+funct.getName()+"("+tfArg1.getText()+","+tfArg2.getText()+","+tfArg3.getText()+")");
 				break;
 			case 2:
 				tf.setText(tf.getText()+""+funct.getName()+"("+tfArg1.getText()+","+tfArg2.getText()+")");

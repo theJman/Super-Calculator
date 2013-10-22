@@ -11,6 +11,7 @@ public class SaveFile implements Serializable {
 
 	private Vector<Function> functions;
 	private TreeMap<String,String> memDict;
+	private TreeMap<String,String> settingsDict;
 	/**
 	 * Creates a new save file with a function list and memory dictionary 
 	 * @param functs
@@ -19,7 +20,21 @@ public class SaveFile implements Serializable {
 	public SaveFile(Vector<Function> functs, TreeMap<String,String> mDict){
 		functions = functs;
 		memDict = mDict;
+		settingsDict = null;
 	}
+	
+	/**
+	 * Creates a new save file with a function list and memory dictionary 
+	 * @param functs
+	 * @param mDict
+	 * 
+	 */
+	public SaveFile(Vector<Function> functs, TreeMap<String,String> mDict, TreeMap<String,String> settings){
+		functions = functs;
+		memDict = mDict;
+		settingsDict = settings;
+	}
+	
 	
 	/**
 	 * @return the functions
@@ -32,6 +47,10 @@ public class SaveFile implements Serializable {
 	 */
 	public TreeMap<String, String> getMemDict() {
 		return memDict;
+	}
+	
+	public TreeMap<String,String> getsSettingsDict(){
+		return settingsDict;
 	}
 	public static SaveFile getSaveFile(){
 		return new SaveFile(Function.getFunctions(),CalculatorFrame.getMemDict());

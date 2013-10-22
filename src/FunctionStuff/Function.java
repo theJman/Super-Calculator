@@ -25,9 +25,19 @@ public class Function implements Serializable{
 	 */
 	public static Vector<Function> getFunctions(){
 		
-		if(functions == null)
+		if(functions == null){
 			functions = new Vector<Function>();
-		
+			//add example functions
+			try {
+				new Function("add", "(A1)+(A2)");
+				new Function("subtract", "(A1)-(A2)");
+				new Function("multiply", "(A1)*(A2)");
+				new Function("divide", "(A1)/(A2)");
+			} catch (InvalidInputException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		//sort functions according to name
 		Collections.sort(functions, new Comparator<Function>() {
 			@Override
@@ -99,10 +109,10 @@ public class Function implements Serializable{
 				formula = formula.substring(0,index) + formula.substring(index+1);
 		}
 		//figure out the number of args
-		if(formula.contains("(1)")){
-			if(formula.contains("(2)")){
-				if(formula.contains("(3)")){
-					if(formula.contains("(4)")){
+		if(formula.contains("(A1)")){
+			if(formula.contains("(A2)")){
+				if(formula.contains("(A3)")){
+					if(formula.contains("(A4)")){
 						numOfArgs = 4;
 					}
 					else{
@@ -126,13 +136,13 @@ public class Function implements Serializable{
 			String stringToSolve = new String(formula);
 			switch (numOfArgs) {
 			case 4:
-				stringToSolve = stringToSolve.replace("(4)", "1");
+				stringToSolve = stringToSolve.replace("(A4)", "1");
 			case 3:
-				stringToSolve = stringToSolve.replace("(3)", "1");
+				stringToSolve = stringToSolve.replace("(A3)", "1");
 			case 2:
-				stringToSolve = stringToSolve.replace("(2)", "1");
+				stringToSolve = stringToSolve.replace("(A2)", "1");
 			default:
-				stringToSolve = stringToSolve.replace("(1)", "1");
+				stringToSolve = stringToSolve.replace("(A1)", "1");
 				break;
 			}
 			//make sure there are no errors when solving
@@ -208,18 +218,17 @@ public class Function implements Serializable{
 		//add in args
 		switch (numOfArgs) {
 		case 4:
-			while(stringToSolve.contains("(4)"))
-				stringToSolve = stringToSolve.replace("(4)", "("+args[3]+")");
+			while(stringToSolve.contains("(A4)"))
+				stringToSolve = stringToSolve.replace("(A4)", "("+args[3]+")");
 		case 3:
-			while(stringToSolve.contains("(3)"))
-				stringToSolve = stringToSolve.replace("(3)", "("+args[2]+")");
-			
+			while(stringToSolve.contains("(A3)"))
+				stringToSolve = stringToSolve.replace("(A3)", "("+args[2]+")");	
 		case 2:
-			while(stringToSolve.contains("(2)"))
-				stringToSolve = stringToSolve.replace("(2)", "("+args[1]+")");
+			while(stringToSolve.contains("(A2)"))
+				stringToSolve = stringToSolve.replace("(A2)", "("+args[1]+")");
 		default:
-			while(stringToSolve.contains("(1)"))
-				stringToSolve = stringToSolve.replace("(1)", "("+args[0]+")");
+			while(stringToSolve.contains("(A1)"))
+				stringToSolve = stringToSolve.replace("(A1)", "("+args[0]+")");
 			break;
 		}
 		System.out.println("with args: "+stringToSolve);
