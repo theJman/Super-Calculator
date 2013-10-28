@@ -225,6 +225,7 @@ public class CalculatorPanel extends JPanel {
 					string = string.substring(0,index) + string.substring(index+1);
 			}
 			System.out.println(string);
+			//variables
 			if (string.contains("=")) {
 				int index = string.indexOf("=");
 				String first = string.substring(0, index);

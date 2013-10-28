@@ -1,6 +1,9 @@
 package BasicCalculator;
 import java.util.ArrayList;
 import java.util.TreeMap;
+
+import javax.swing.JLabel;
+
 import FunctionStuff.Function;
 
 
@@ -17,7 +20,7 @@ public class Solver {
 			throw new InvalidInputException("Can not solve a blank string");
 		
 		
-		System.out.println("Starting String: "+ string);
+		//System.out.println("Starting String: "+ string);
 		//make sure number is in front of round
 		if(string.indexOf("round") == 0)
 			string = "1"+string;
@@ -100,11 +103,9 @@ public class Solver {
 			int parenCount = 0;
 			int commaCheck = 0;
 			int lastIndex = -1;
-			int openParenCount = 0;
 			for(int i = string.indexOf("sum(");i<string.length();i++){
 				if(string.charAt(i) == '('){
 					parenCount++;
-					openParenCount++;
 				}
 				else if(string.charAt(i) == ')'){
 					parenCount--;
@@ -113,7 +114,8 @@ public class Solver {
 						break;
 					}
 				}
-				else if(string.charAt(i) == ',')
+				//only checks commas in sum function
+				else if(string.charAt(i) == ',' && parenCount < 2)
 					commaCheck++;
 			}
 			//make sure input is valid
@@ -124,6 +126,7 @@ public class Solver {
 			//call summation method with arguments
 			//get arguments
 			int index1 = string.indexOf("sum(")+4;
+			System.out.println("args: "+string.substring(index1, lastIndex));
 			int index2 = string.indexOf(',', index1);
 			String arg1 = string.substring(index1, index2);
 			int temp = index1;
@@ -132,8 +135,8 @@ public class Solver {
 			String arg2 = string.substring(index1, index2);
 			index1=index2+1;
 			index2=string.indexOf(')',index1);
-			String arg3 = string.substring(index1, index2);
-			
+			String arg3 = string.substring(index1, lastIndex);
+			System.out.println("arg3: "+arg3);
 			int start,count;
 			try{
 				start = Integer.parseInt(arg1);
@@ -143,7 +146,8 @@ public class Solver {
 				throw new InvalidInputException("First two arguments in summation function must be numbers.");
 			}
 			
-			string = string.substring(0, string.indexOf("sum(")) + summation(start, count, 1, arg3)+string.substring(1+string.indexOf(')', string.indexOf("sum(")));
+			string = string.substring(0, string.indexOf("sum(")) + summation(start, count, 1, arg3)+string.substring(1+lastIndex);
+			System.out.println("summation final: "+string);
 		}
 		//
 		//
@@ -212,7 +216,18 @@ public class Solver {
 				else if(string.charAt(i) == ')')
 					endCount++;
 			}
+			while(endCount>startCount){
+				int index = string.lastIndexOf(')');
+				if (index==-1)
+					break;
+				String temp = new String(string);
+				string = temp.substring(0, index);
+				if(index<temp.length()-1)
+					string+=temp.substring(index+1);
+				endCount--;
+			}
 			if(startCount != endCount){
+				System.out.println("problem: "+string);
 				throw new InvalidInputException("Check your parentheses");
 			}
 			int depthOfParen = 0;
@@ -237,18 +252,21 @@ public class Solver {
 
 
 		}
-		//check to see if they are using a function
-		for(int i = 0;i<string.length();i++){
-			if(string.charAt(i) == '(' )
-				if(Character.isLetter(string.charAt(i+1))){
-					for(int b = i+1;b<string.length();b++){
-						if(!Character.isLetter(string.charAt(b))){
-							
-						}
-					}
-				}
+		//should not be any parenthesis at this point
+		//remove strays
+		while(string.contains("(")){
+			String temp = new String(string);
+			string= temp.substring(0, temp.indexOf('('));
+			if(temp.indexOf('(') < temp.length()-1)
+				string = string + temp.substring(temp.indexOf('(')+1);
 		}
-		
+		while(string.contains(")")){
+			String temp = new String(string);
+			string= temp.substring(0, temp.indexOf(')'));
+			if(temp.indexOf(')') < temp.length()-1)
+				string = string + temp.substring(temp.indexOf(')')+1);
+		}
+		//System.out.println("string before solve: "+string);
 		
 		ArrayList<Double> numbers = new ArrayList<Double>();
 		ArrayList<String> signs = new ArrayList<String>();
@@ -316,6 +334,7 @@ public class Solver {
 		
 		//make sure they have to correct amount of signs
 		if(numbers.size() != 1 + signs.size()){
+			System.out.println("problem: "+string);
 			throw new InvalidInputException();
 		}
 		//10 5 20
@@ -930,7 +949,7 @@ public class Solver {
 			throw new InvalidInputException("These operators are not supported: "+signs);
 		
 		
-		System.out.println("Solved to get: " +string);
+		//System.out.println("Solved to get: " +string);
 	
 		String retVal = "";
 		if(numbers.get(0)%1 == 0){
@@ -942,16 +961,19 @@ public class Solver {
 		return retVal;
 	}
 	/**
-	 * Preforms a summation
+	 * Performs a summation
 	 * @param start start number
 	 * @param count amount of additions
 	 * @param incement
-	 * @param string formula in whitch the letter 'x' will be replaced with the number
+	 * @param string formula in which the letter 'x' will be replaced with the number
 	 * @return
 	 * @throws InvalidInputException
 	 */
 	public static String summation(int start, int count,double incement,final String string) throws InvalidInputException{
 		double number = 0;
+		System.out.print("Solving");
+		JLabel label = CalculatorFrame.getPanel().getLabel();
+		label.setText("Solving");
 		for(int i = start; i < start+count; i+=incement){
 			//swap x if needed
 			String temp = string;
@@ -962,7 +984,35 @@ public class Solver {
 				else
 					temp = temp.substring(0, index)+"("+i+")"+temp.substring(index+1);	
 			}
-			number += Double.parseDouble(solveString(temp));
+			//System.out.println("Temp before solve: "+temp);
+			//System.out.println("summation function"+temp);
+			int dotCount = (int)count/10;
+			if(i == dotCount+start)
+				System.out.println("10%");
+			else if (i== 2*dotCount+start)
+				System.out.println("20%");
+			else if (i== 3*dotCount+start)
+				System.out.println("30%");
+			else if (i== 4*dotCount+start)
+				System.out.println("40%");
+			else if (i== 5*dotCount+start)
+				System.out.println("50%");
+			else if (i== 6*dotCount+start)
+				System.out.println("60%");
+			else if (i== 7*dotCount+start)
+				System.out.println("70%");
+			else if (i== 8*dotCount+start)
+				System.out.println("80%");
+			else if (i== 9*dotCount+start)
+				System.out.println("90%");
+			else if (i== 10*dotCount+start-1)
+				System.out.println("100%");
+
+			try {
+				number += Double.parseDouble(solveString(temp));
+			} catch (Exception e) {
+				System.out.println("ERROR: "+temp);
+			}
 		}
 		return ""+number;
 	}

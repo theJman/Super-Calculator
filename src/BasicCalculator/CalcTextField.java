@@ -66,8 +66,9 @@ public class CalcTextField extends JTextField {
 								if (e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
 									System.out.println("Just typed function name");
 									//insert parens
-									setText(text+"()");
-									setCaretPosition(getCaretPosition()-1);
+									int caretPos = getCaretPosition()+2;
+									setText(text.substring(0, getCaretPosition())+"()"+text.substring(getCaretPosition()));
+									setCaretPosition(caretPos-1);
 								}
 								else{
 									//delete end paren
