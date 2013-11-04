@@ -11,6 +11,7 @@ public class CalculatorFrame extends JFrame {
 
 	private static final long serialVersionUID = -5908008666274025806L;
 	private static CalculatorFrame mainCalcFrame;
+	/*
 	//values need to be sorted according to length of key
 	private static TreeMap<String,String> memDict;
 	public static TreeMap<String,String> getMemDict(){
@@ -21,7 +22,7 @@ public class CalculatorFrame extends JFrame {
 	public static void setMemDict(TreeMap<String,String> map){
 		memDict = map;
 	}
-	
+	*/
 	private CalculatorPanel calcPanel;
 
 	/**
@@ -42,10 +43,6 @@ public class CalculatorFrame extends JFrame {
 	private CalculatorPanel getCalcPanel(){
 		return calcPanel;
 	}
-	
-	
-	
-	
 	
 	public static CalculatorFrame getFrame(){
 		return mainCalcFrame;

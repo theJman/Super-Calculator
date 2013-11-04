@@ -33,6 +33,9 @@ public class Function implements Serializable{
 				new Function("subtract", "(A1)-(A2)");
 				new Function("multiply", "(A1)*(A2)");
 				new Function("divide", "(A1)/(A2)");
+				new Function("count", "sum((A1),1)");
+				new Function("mean", "sum((A1),x)/count((A1))");
+				new Function("stddev", "sqrt(sum((A1), (x-mean((A1)))^2)/(count((A1))-1))");
 			} catch (InvalidInputException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -130,27 +133,28 @@ public class Function implements Serializable{
 		else{
 			numOfArgs = 0;
 		}
-		
-		//make sure formula works
-		try {
-			String stringToSolve = new String(formula);
-			switch (numOfArgs) {
-			case 4:
-				stringToSolve = stringToSolve.replace("(A4)", "1");
-			case 3:
-				stringToSolve = stringToSolve.replace("(A3)", "1");
-			case 2:
-				stringToSolve = stringToSolve.replace("(A2)", "1");
-			default:
-				stringToSolve = stringToSolve.replace("(A1)", "1");
-				break;
+		if(!formula.contains("sum")){
+			//make sure formula works
+			try {
+				String stringToSolve = new String(formula);
+				switch (numOfArgs) {
+				case 4:
+					stringToSolve = stringToSolve.replace("(A4)", "1");
+				case 3:
+					stringToSolve = stringToSolve.replace("(A3)", "1");
+				case 2:
+					stringToSolve = stringToSolve.replace("(A2)", "1");
+				default:
+					stringToSolve = stringToSolve.replace("(A1)", "1");
+					break;
+				}
+				//make sure there are no errors when solving
+				Solver.solveString(stringToSolve);
+				
+			} catch (InvalidInputException e) {
+				//function didn't work so throw an exception
+				throw e;
 			}
-			//make sure there are no errors when solving
-			Solver.solveString(stringToSolve);
-			
-		} catch (InvalidInputException e) {
-			//function didn't work so throw an exception
-			throw e;
 		}
 		
 		//if the function is valid then init the variables

@@ -156,7 +156,6 @@ public class CalculatorPanel extends JPanel {
 	public void solve(){
 		
 		try {
-			TreeMap<String,String> memDict = frame.getMemDict();
 			String string = textField.getText();
 			//check for no input
 			if(string.length() == 0){
@@ -181,7 +180,7 @@ public class CalculatorPanel extends JPanel {
 				}
 				//remove all variables on that line
 				Vector<String> keysToRemove = new Vector<String>();
-				for(String key : memDict.keySet()){
+				for(String key : Variable.getVars()){
 					while (string.contains(key)) {
 						keysToRemove.add(key);
 						int index = string.indexOf(key);
@@ -191,7 +190,7 @@ public class CalculatorPanel extends JPanel {
 				}
 				//remove the variables from the dict
 				for(String key : keysToRemove){
-					memDict.remove(key);
+					Variable.remove(key);
 				}
 				display("Removed variables: "+keysToRemove.toString(),true);
 				textField.setText("");
@@ -230,9 +229,9 @@ public class CalculatorPanel extends JPanel {
 				int index = string.indexOf("=");
 				String first = string.substring(0, index);
 				String second = string.substring(index+1);
-		
-				second = Solver.solveString(second);
-				memDict.put(first, second);
+				if(!second.contains("{"))
+					second = Solver.solveString(second);
+				new Variable(first, second);
 				System.out.println("Key: ["+first +"] value: ["+second+"]");
 				setTextField("");
 				display(original,false);
@@ -240,8 +239,8 @@ public class CalculatorPanel extends JPanel {
 			}
 			else if(string.contains("mem")){
 				String displayText = "";
-				for (String key : memDict.keySet()) {
-					displayText = displayText + " ["+key+"="+memDict.get(key)+"]";
+				for (String key : Variable.getVars()) {
+					displayText = displayText + " ["+key+"="+Variable.getValue(key)+"]";
 				}
 				display(displayText, false);
 				setTextField("");

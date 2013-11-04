@@ -223,7 +223,7 @@ public class CalcButtonsPanel extends JPanel {
 		btnViewVars.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				calcPanel.display(CalculatorManager.getMemDict().toString(), false);
+				//calcPanel.display(CalculatorManager.getMemDict().toString(), false);
 			}
 		});
 		add(btnViewVars);

@@ -60,8 +60,13 @@ public class SolverTester {
 	@Test
 	public void summationTest(){
 		try {
-			assertEquals(32.0,Double.parseDouble(Solver.summation(1, 3, 1, "x^x")), delta);
+			assertEquals(5.0,Double.parseDouble(Solver.summation(1, 2, 1, "x^x")), delta);
 			assertEquals(10.0 ,Double.parseDouble(Solver.summation(1, 4, 1, "x")) , delta);
+			new Variable("list", "{2,8,10}");
+			assertEquals(20.0, Double.parseDouble(Solver.summation(Variable.listToArray(Variable.getValue("list")), "x")),delta);
+			new Variable("list2", "{2,4,8}");
+			assertEquals(20.0, Double.parseDouble(Solver.summation(Variable.listToArray(Variable.getValue("list")), "x")),delta);
+			
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

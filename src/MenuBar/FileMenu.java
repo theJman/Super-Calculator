@@ -18,7 +18,8 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import BasicCalculator.CalculatorFrame;
-import BasicCalculator.CalculatorManager;
+import BasicCalculator.Variable;
+
 import FunctionStuff.Function;
 import FunctionStuff.SaveFile;
 
@@ -77,7 +78,7 @@ public class FileMenu extends JMenu {
 			public void actionPerformed(ActionEvent arg0) {
 				if(JOptionPane.showConfirmDialog(null, "Are you sure you want to erase all user created variables?", "Are you sure?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION){
 					System.out.println("Removing Variables");
-					CalculatorManager.getMemDict().clear();
+					Variable.getVariables().clear();
 					menuBar.updateFunctions();
 				}
 				
@@ -106,7 +107,7 @@ public class FileMenu extends JMenu {
 				ObjectInputStream input = new ObjectInputStream(new FileInputStream(file));
 				saveFile = (SaveFile) input.readObject();
 				input.close();
-				CalculatorFrame.setMemDict(saveFile.getMemDict());
+				Variable.setList(saveFile.getVariables());
 				Function.setFunctions(saveFile.getFunctions());
 				menuBar.updateFunctions();
 				System.out.println("Open Success");
