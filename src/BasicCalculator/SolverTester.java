@@ -3,6 +3,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import savable.Variable;
+
 
 public class SolverTester {
 	private final double delta = 0.0000001;

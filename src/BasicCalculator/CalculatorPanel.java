@@ -1,8 +1,8 @@
 package BasicCalculator;
 
+import java.awt.FontMetrics;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JFrame;
@@ -12,8 +12,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
-import FunctionStuff.Function;
-import FunctionStuff.FunctionPanel;
+import savable.Function;
+import savable.Settings;
+import savable.Variable;
+
 import MenuBar.CalcMenuBar;
 
 public class CalculatorPanel extends JPanel {
@@ -63,7 +65,6 @@ public class CalculatorPanel extends JPanel {
 			functionPanel = new FunctionPanel(new Point(7,80), null,this);
 			functionPanel.setVisible(false);
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		add(functionPanel);
@@ -114,34 +115,36 @@ public class CalculatorPanel extends JPanel {
 	 * Updates the menubar items
 	 */
 	public void updateMenuBar(){
-		menuBar.updateFunctions();		
+		menuBar.updateMenus();		
 	}
 	/**
 	 * Updates the width of the label and textfield relitive to the size of the window
 	 */
 	public void updateWidth(){
-		
-		String labeltext = textField.getText();
-		if(labeltext.length() < label.getText().length())
-			labeltext = label.getText();
-		if(labeltext.length()>26)
-		{
-			int l = labeltext.length();
-			int w = 350;
-			while(l-35 > 0){
-				w+=8;
-				l--;
-			}
-			extendside(w);
+		//get the actual width of text and set the width of everything else to match
+		FontMetrics metrics = getGraphics().getFontMetrics();
+		int labelDif = (label.getWidth()- metrics.stringWidth(label.getText())) - 15;
+		int textFieldDif = (textField.getWidth() - metrics.stringWidth(textField.getText())) - 20;
+		if(labelDif <= 0){
+			extendside(frame.getWidth() - labelDif);
 		}
-		else
+		if(textFieldDif <= 0){
+			extendside(frame.getWidth() - textFieldDif);
+		}
+		if(frame.getWidth() > 350 && labelDif > 0 && textFieldDif > 0){
 			extendside(350);
+		}
 		
 	}
+	/**
+	 * Sets everything up according to a new width
+	 * @param width
+	 */
 	private void extendside(int width){
 		JFrame f = frame;
 		f.setBounds(f.getLocation().x, f.getLocation().y, width, f.getHeight());
 		JTextField tf = textField;
+		setBounds(getLocation().x, getLocation().y, width, getHeight());
 		JLabel l = label;
 		tf.setBounds(tf.getLocation().x, tf.getLocation().y, f.getWidth()-11, tf.getHeight());
 		l.setBounds(l.getLocation().x, l.getLocation().y, f.getWidth()-17, l.getHeight());
@@ -159,16 +162,20 @@ public class CalculatorPanel extends JPanel {
 			String string = textField.getText();
 			//check for no input
 			if(string.length() == 0){
-				//check to see if user wants to insert a line
-				if(currentLineIndex !=	previousLines.size()-1){
-					textField.setText(label.getText().substring(0, label.getText().indexOf("=")));
-					currentLineIndex =	previousLines.size()-1;
-				}
-				//check to see if the want the last answer added back in
-				else{
-					textField.setText(lastValue);
-
-				}
+				//insert the selected line in the label
+				textField.setText(label.getText().substring(0, label.getText().indexOf("=")-1));
+				currentLineIndex =	previousLines.size()-1;
+				return;
+			}
+			if(string.equals("save")){
+				menuBar.autoSave();
+			}
+			if(string.equals("set")){
+				Settings.AUTOROUND.set("4");
+				return;
+			}
+			else if(string.equals("get")){
+				System.out.println("Auto round: " + Settings.AUTOROUND.get());
 				return;
 			}
 			//clear display
@@ -180,7 +187,7 @@ public class CalculatorPanel extends JPanel {
 				}
 				//remove all variables on that line
 				Vector<String> keysToRemove = new Vector<String>();
-				for(String key : Variable.getVars()){
+				for(String key : Variable.getVariableNames()){
 					while (string.contains(key)) {
 						keysToRemove.add(key);
 						int index = string.indexOf(key);
@@ -194,6 +201,8 @@ public class CalculatorPanel extends JPanel {
 				}
 				display("Removed variables: "+keysToRemove.toString(),true);
 				textField.setText("");
+				//update menus
+				updateMenuBar();
 				return;
 			}
 			//replace "last" with last answer
@@ -224,7 +233,8 @@ public class CalculatorPanel extends JPanel {
 					string = string.substring(0,index) + string.substring(index+1);
 			}
 			System.out.println(string);
-			//variables
+			
+			//creating a new variable
 			if (string.contains("=")) {
 				int index = string.indexOf("=");
 				String first = string.substring(0, index);
@@ -235,43 +245,25 @@ public class CalculatorPanel extends JPanel {
 				System.out.println("Key: ["+first +"] value: ["+second+"]");
 				setTextField("");
 				display(original,false);
+				updateMenuBar();
 				return;
 			}
 			else if(string.contains("mem")){
 				String displayText = "";
-				for (String key : Variable.getVars()) {
+				//make sure there are variables to show
+				if(!Variable.hasVars()){
+					displayText = "No Variables";
+					display(displayText, false);
+					setTextField("");
+					return;
+				}
+				for (String key : Variable.getVariableNames()) {
 					displayText = displayText + " ["+key+"="+Variable.getValue(key)+"]";
 				}
 				display(displayText, false);
 				setTextField("");
 				return;
 			}
-			//check to see if a function is present
-			//
-			/*
-			for(Function f : Function.getFunctions()){
-				while(string.contains(f.getName()+"(")){
-					System.out.println("contains function-----start------");
-					int beginIndex = string.indexOf('(', string.indexOf(f.getName()));
-					int endIndex = string.indexOf(')', beginIndex);
-					String args = string.substring(beginIndex+1, endIndex);
-					String[] tempArgArray = args.split(",");
-					if(f.getNumOfArgs() != tempArgArray.length){
-						//incorrect amount of args
-						throw new InvalidInputException("Invalid number of args for function:"+f.getName());
-					}
-					//correct num of args so replace function with the answer to it
-					System.out.println("string to replace: "+string.substring(string.indexOf(f.getName()), endIndex+1));
-					System.out.println(f.solveFunction(tempArgArray));
-					string = string.substring(0, string.indexOf(f.getName())) +  f.solveFunction(tempArgArray) + string.substring(endIndex+1);
-					System.out.println("final: "+ string);
-
-					System.out.println("contains function\n-----end------");
-
-				}
-			}
-			*/
-			
 			
 			//calls solve method from solver class
 			String answer = Solver.solveString(string);
@@ -285,7 +277,7 @@ public class CalculatorPanel extends JPanel {
 			//store in previous lines
 			previousLines.add(label.getText());
 			currentLineIndex++;
-			System.out.println("Current line: "+currentLineIndex);
+			System.out.println("Current line: " + currentLineIndex);
 		
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -1,5 +1,5 @@
 Welcome to Super Calculator what the stranded computer calculator should be!
-version .6
+version .7
 
 ~Features~
 -supports all normal functions EX. + - * / % ect.
@@ -14,11 +14,12 @@ version .6
 -a label that displays the previous calculation
 -you can go back and view previous calculations with up/down arrow keys
 -press enter with a blank text box and while on a previous calculation and that calculation will be inserted into the text box
--press enter with a blank text box and the most recent calculation in the label to insert the last answer into the text box
 -can create and use your own functions by using the Functions menu bar item 
 -typing in "last" will automaticly put your last answer into the box
 -supports summations: format is "sum(start,count,function)" EX. sum(1,2, x^x) = 5
 -supports lists in formant {1,2,3} EX. list = {1,2,3} (can only be used in summations currently)
+-supports using lists as vectors. EX. {1,2,3}*2 = {2,4,6}
+-autosaves functions and variables to a defualt savefile
 -supports lists in summation functions: format is "sum(list, function)" EX. sum({1,2},x^x)=5
 -lists can be used as arguments in functions
 -can save your functions and variables to a file

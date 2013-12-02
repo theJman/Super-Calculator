@@ -1,9 +1,8 @@
-package FunctionStuff;
+package savable;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
-
 import BasicCalculator.InvalidInputException;
 import BasicCalculator.Solver;
 /**
@@ -162,6 +161,7 @@ public class Function implements Serializable{
 		this.formula = formula;
 		//add this function to the list of functions
 		addToFunctions(this);
+		
 	}
 	/**
 	 * @return the formula

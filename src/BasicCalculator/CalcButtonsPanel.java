@@ -5,6 +5,9 @@ import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JButton;
+
+import savable.Variable;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -223,7 +226,16 @@ public class CalcButtonsPanel extends JPanel {
 		btnViewVars.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//calcPanel.display(CalculatorManager.getMemDict().toString(), false);
+				String displayText = "";
+				if(!Variable.hasVars()){
+					displayText = "No Variables";
+				}
+				else{
+					for (String key : Variable.getVariableNames()) {
+						displayText = displayText + " ["+key+"="+Variable.getValue(key)+"]";
+					}
+				}
+				calcPanel.display(displayText, false);
 			}
 		});
 		add(btnViewVars);

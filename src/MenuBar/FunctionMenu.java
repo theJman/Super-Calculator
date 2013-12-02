@@ -7,9 +7,10 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import savable.Function;
+
 import BasicCalculator.CalculatorFrame;
 import BasicCalculator.CalculatorPanel;
-import FunctionStuff.Function;
 
 public class FunctionMenu extends JMenu {
 	private static final long serialVersionUID = 8587329656560955858L;

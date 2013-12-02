@@ -9,7 +9,9 @@ import BasicCalculator.CalculatorPanel;
 public class CalcMenuBar extends JMenuBar {
 	private static final long serialVersionUID = 1L;
 	FunctionMenu functionMenu;
+	FileMenu fileMenu;
 	CalculatorPanel panel;
+	VariableMenu variableMenu;
 	/**
 	 * Creates a new menu bar with a file, function solve and help menu
 	 */
@@ -17,21 +19,33 @@ public class CalcMenuBar extends JMenuBar {
 		setBackground(Color.gray);
 		this.panel = panel;
 		functionMenu = new FunctionMenu(panel);
+		fileMenu = new FileMenu(this);
+		variableMenu = new VariableMenu();
 		add(new FileMenu(this));
 		add(functionMenu);
-		add(new SolveMenu());
+		add(variableMenu);
 		add(new HelpMenu());
 	}
 	public void updateFunctions(){
 		functionMenu.updateFunctions();
 	}
+	/**
+	 * Updates the menus after something has been added
+	 */
 	public void updateMenus(){
-		removeAll();
-		updateUI();
-		
-		add(new FileMenu(this));
-		add(new FunctionMenu(panel));
-		add(new SolveMenu());
-		add(new HelpMenu());
+		functionMenu.updateFunctions();
+		variableMenu.updateVariables();
+	}
+	/**
+	 * See autosave in FileMenu
+	 */
+	public void autoSave(){
+		fileMenu.autoSave();
+	}
+	/**
+	 * See autoopen in FileMenu
+	 */
+	public void autoOpen(){
+		fileMenu.autoOpen();
 	}
 }

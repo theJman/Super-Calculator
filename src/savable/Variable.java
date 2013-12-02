@@ -1,12 +1,17 @@
-package BasicCalculator;
+package savable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class Variable {
+import BasicCalculator.CalculatorFrame;
+import BasicCalculator.InvalidInputException;
+
+
+
+public class Variable implements Serializable {
+	private static final long serialVersionUID = -5875549222457743023L;
 	//
 	//
 	//STATIC 
@@ -29,12 +34,14 @@ public class Variable {
 		return null;
 	}
 	/**
-	 * Sets the values of the variables
+	 * Sets the values of the variables and calls to update the menubar
 	 * Use when opening from savefile
 	 * @param nVariables
 	 */
 	public static void setList(TreeMap<String,String> nVariables){
 		variables = nVariables;
+		//refresh the menubar
+		CalculatorFrame.getPanel().updateMenuBar();
 	}
 	/**
 	 * Changes a list into an array
@@ -43,6 +50,13 @@ public class Variable {
 	 * @throws InvalidInputException
 	 */
 	public static String[] listToArray(String list) throws InvalidInputException{
+		System.out.println("List: "+list);
+		//take out parens
+		while(list.charAt(0) == '(')
+			list = list.substring(1);
+		while(list.charAt(list.length()-1) == ')')
+			list = list.substring(0, list.length()-1);
+		System.out.println("New List: "+list);
 		if(list.contains("{") && list.contains("}")){
 			int start = list.indexOf('{'), stop = list.indexOf('}');
 			if(start >= stop-1)
@@ -54,34 +68,59 @@ public class Variable {
 		else
 			throw new InvalidInputException("Expected a list, got: "+list);
 	}
+	/**
+	 * Checks if there are any variables
+	 * @return true if the list is not empty
+	 */
 	public static boolean hasVars(){
 		if(variables != null && variables.keySet().size() > 0)
 			return true;
 		return false;
 	}
+	/**
+	 * 
+	 * @param key
+	 * @throws InvalidInputException
+	 */
 	public static void remove(String key) throws InvalidInputException{
 		if(!variables.containsKey(key))
 			throw new InvalidInputException("The variable \""+key+"\" does not exist.");
 		variables.remove(key);
 	}
-	public static Set<String> getVars(){
-		return variables.keySet();
+	/**
+	 * A set of the variable names
+	 * @return the set or null if it is empty
+	 */
+	public static Set<String> getVariableNames(){
+		if(hasVars())
+			return variables.keySet();
+		else 
+			return null;
 	}
 
 	//
 	//
 	//NON STATIC
 	/**
-	 * Creates a new variable and adds it to the list
+	 * Checks if variable name is valid and if it is then it creates a new variable and adds it to the list
 	 * @param key name of var
 	 * @param value value of var
 	 * @param type wether it is a number or a list
-	 * @throws InvalidInputException
+	 * @throws InvalidInputException invalid variable name
 	 */
 	public Variable(String key, String value) throws InvalidInputException{
-		//make sure variable doesn't already exist
-		if(variables != null && getValue(key) != null)
-			throw new InvalidInputException("This variable already exists.");
+		//make sure variable name isn't already being used by computer or as a function
+		if(key.equals("e") || key.equals("sum") || key.equals("rand") || key.equals("sqrt") || key.equals("root") ||
+				key.equals("ln") || key.equals("log")||key.equals("sin")|| key.equals("cos") || key.equals("tan") ||
+				key.equals("acos") ||key.equals("asin")|| key.equals("atan") || key.equals("E") || key.equals("round") ||
+				key.equals("last") || key.equals("mem") || key.equals("x")){
+			throw new InvalidInputException("Variable name \""+key+"\" is already being used by the computer.");
+		}
+		for(Function f : Function.getFunctions()){
+			if(f.getName().equals(key))
+				throw new InvalidInputException("There is already a function with the name: "+key);
+		}
+		
 		//create variable
 		if(variables  == null)
 			variables = new TreeMap<String,String>(new VariableComparator());

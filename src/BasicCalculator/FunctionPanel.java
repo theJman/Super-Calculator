@@ -1,4 +1,4 @@
-package FunctionStuff;
+package BasicCalculator;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -12,9 +12,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import BasicCalculator.CalcTextField;
-import BasicCalculator.CalculatorFrame;
-import BasicCalculator.CalculatorPanel;
+import savable.Function;
+
 
 
 public class FunctionPanel extends JPanel {
@@ -32,7 +31,7 @@ public class FunctionPanel extends JPanel {
 	private JTextField tfArg3 = new JTextField("arg3");
 	private JTextField tfArg4 = new JTextField("arg4");
 	
-	private JTextField tfFormula = new JTextField("");
+	private CalcTextField tfFormula = new CalcTextField();
 	private JTextField tfName = new JTextField("");
 	
 	private CalculatorPanel panel;
@@ -78,16 +77,22 @@ public class FunctionPanel extends JPanel {
 		tfArg4.setBounds(240, 65, 50, 20);
 		tfArg3.setBounds(190, 65, 50, 20);
 		tfArg2.setBounds(140, 65, 50, 20);
-		tfArg1.setBounds(90, 65, 50, 20);
+		tfArg1.setBounds(90, 65, 50, 20);//Parameter 
 		lblArgs.setBounds(5, 65, 90, 20);
 		//make text area like a label
-		lblHowTo = new JTextArea("To create a function enter the formula for it in the\nformula box. For the peramiters use the formant\n\"(A1)\" for the first peramiter and \"(A2)\" for the second\nand so on up to 4.\nEx. (A1) * (A2) = arg1 * arg2", 3, 10);
+		lblHowTo = new JTextArea("" +
+				"To create a function enter the formula for it in the\n" +
+				"formula box. For the parameters use the formant\n" +
+				"\"(A1)\" for the first perameter and \"(A2)\" for the \n" +
+				"second and so on up to 4.\n" +
+				"Ex. (A1) * (A2) = arg1 * arg2\n" +
+				"To delete a function save it with an empty name.", 3, 10);
 		lblHowTo.setEditable(false);
 		lblHowTo.setOpaque(false);
 		lblHowTo.setFocusable(false);
 		lblHowTo.setCursor(null);
 		lblHowTo.setBorder(BorderFactory.createLineBorder(Color.black));
-		lblHowTo.setBounds(5, 65, 325, 85);
+		lblHowTo.setBounds(5, 65, 325, 98);
 		
 		//set specific function options
 		changeFunction(funct);

@@ -8,8 +8,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.TreeMap;
-import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -17,11 +15,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import BasicCalculator.CalculatorFrame;
-import BasicCalculator.Variable;
+import savable.Function;
+import savable.SaveFile;
+import savable.Variable;
 
-import FunctionStuff.Function;
-import FunctionStuff.SaveFile;
 
 public class FileMenu extends JMenu {
 	private static final long serialVersionUID = -7472611753786188478L;
@@ -91,7 +88,7 @@ public class FileMenu extends JMenu {
 	 * Called when the open menu item is pressed
 	 */
 	private void openPressed(){
-		JFileChooser fileChooser = new JFileChooser();
+		JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
 		FileNameExtensionFilter extentions = new FileNameExtensionFilter("SuperCalcSave", "scalcsave");
 		fileChooser.setFileFilter(extentions);
 		int retunedVal = fileChooser.showOpenDialog(this);
@@ -122,7 +119,7 @@ public class FileMenu extends JMenu {
 	 */
 	private void savePressed(){
 		
-		JFileChooser fileChooser = new JFileChooser();
+		JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
 		FileNameExtensionFilter extentions = new FileNameExtensionFilter("SuperCalcSave", "scalcsave");
 		fileChooser.setFileFilter(extentions);
 		int retunedVal = fileChooser.showSaveDialog(this);
@@ -148,6 +145,42 @@ public class FileMenu extends JMenu {
 				e.printStackTrace();
 			}
 			
+		}
+	}
+	/**
+	 * Saves everything into a Default.scalcsave file in the current directory
+	 */
+	public void autoSave(){
+		try {
+			//read in file
+			File file = new File(System.getProperty("user.dir")+"/Default.scalcsave");
+			ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(file));
+			output.writeObject(SaveFile.getSaveFile());
+			output.close();
+			System.out.println("Save Success");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * Opens everything from the autosave
+	 */
+	public void autoOpen(){
+		SaveFile saveFile = null;
+		try {
+			//read in file
+			File file = new File(System.getProperty("user.dir")+"/Default.scalcsave");
+			ObjectInputStream input = new ObjectInputStream(new FileInputStream(file));
+			saveFile = (SaveFile) input.readObject();
+			input.close();
+			Variable.setList(saveFile.getVariables());
+			Function.setFunctions(saveFile.getFunctions());
+			saveFile.setSettings();
+			menuBar.updateFunctions();
+			System.out.println("Open Success");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	

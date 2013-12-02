@@ -5,9 +5,16 @@ import java.util.Vector;
 
 import javax.swing.JLabel;
 
-import FunctionStuff.Function;
+import savable.Function;
+import savable.Variable;
 
 
+/**
+ * The "main brain" of the calculator.
+ * This class contains handles the actual solving that the calculator does.
+ * @author JeremyLittel
+ *
+ */
 public class Solver {
 	/**
 	 * Solves a math function in the format of a string and returns a number in the format of a string
@@ -19,7 +26,6 @@ public class Solver {
 		if(string == null || string.length() == 0)
 			throw new InvalidInputException("Can not solve a blank string");
 		
-		
 		//System.out.println("Starting String: "+ string);
 		//make sure number is in front of round
 		if(string.indexOf("round") == 0)
@@ -29,10 +35,26 @@ public class Solver {
 		//replaces the longest ones first to avoid short variables breaking up long ones
 		if(Variable.hasVars()){
 			//check for variables
-			for(String key : Variable.getVars()){
+			for(String key : Variable.getVariableNames()){
 				while (string.contains(key)) {
 					int index = string.indexOf(key);
-					string = string.substring(0,index) + Variable.getValue(key) + string.substring(index+key.length());
+					if(index > 0){	
+						//make sure it isn't part of another word
+						if(!Character.isLetter(string.charAt(index-1)))
+							string = string.substring(0,index) + Variable.getValue(key) + string.substring(index+key.length());
+						else
+							break;
+					}
+					else if (index + key.length() +1 < string.length()){
+						//make sure it isn't part of another word
+						if(!Character.isLetter(string.charAt(index+key.length()+1)))
+							string = string.substring(0,index) + Variable.getValue(key) + string.substring(index+key.length());
+						else
+							break;
+					}
+					else{
+						string = string.substring(0,index) + Variable.getValue(key) + string.substring(index+key.length());
+					}
 				}
 			}
 		}
@@ -59,7 +81,6 @@ public class Solver {
 					doneChecking = true;
 			}
 		}
-		
 		//check for e
 		int countE = 0;
 		for(int i = 0; i<string.length();i++){
@@ -102,7 +123,7 @@ public class Solver {
 			int commaCheck = 0;
 			int lastIndex = -1;
 			int bracketCount = 0;
-			for(int i = string.indexOf("sum(");i<string.length();i++){
+			for(int i = string.indexOf("sum("); i < string.length(); i++){
 				switch (string.charAt(i)) {
 				case '(':
 					parenCount++;
@@ -129,37 +150,48 @@ public class Solver {
 				}
 			}
 			//make sure input is valid
+			if(bracketCount != 0)
+				throw new InvalidInputException("Check your brackets.");
 			if(lastIndex == -1)
 				throw new InvalidInputException("Check Parenthesis in summation function.");
 			if(commaCheck != 2 && commaCheck !=1)
-				throw new InvalidInputException("Summation function requires 3 arguments seperated by commas");
-			if(bracketCount != 0)
-				throw new InvalidInputException("List can only have one set of brackets");
+				throw new InvalidInputException("Summation function requires 3 arguments seperated by commas");	
 			//call summation method with arguments
 			//get arguments
-			int index1 = string.indexOf("sum(")+4;
+			int indexOfSum = string.indexOf("sum(");
+			int index1 = indexOfSum + 4;
+			//string that contains just the arguments
+			String args = string.substring(index1, lastIndex+1);
+			int argLastIndex = lastIndex - (string.substring(0, index1).length());
+			System.out.println("char: "+ args.charAt(argLastIndex));
+			index1 = 0;
+			System.out.println("args: "+args);
 			int fromIndex = index1;
-			if(commaCheck==1 && string.contains("}")){
-				fromIndex = string.indexOf('}');
+			if(commaCheck==1 && args.contains("}")){
+				fromIndex = args.indexOf('}');
 			}
-			System.out.println("args: "+string.substring(index1, lastIndex));
-			int index2 = string.indexOf(',', fromIndex);
-			String arg1 = string.substring(index1, index2);
-			int temp = index1;
+			int index2 = args.indexOf(',', fromIndex);
+			System.out.println("from index: "+fromIndex+"\n"+args);
+			String arg1 = args.substring(0, index2);
 			String arg2 = "";
+			//only need this arg for counter summation
 			if(commaCheck == 2){
 				index1=index2+1;
-				index2=string.indexOf(',',index1);
-				arg2 = string.substring(index1, index2);
+				index2=args.indexOf(',',index1);
+				arg2 = args.substring(index1, index2);
 			}
 			
 			index1=index2+1;
-			index2=string.indexOf(')',index1);
-			String arg3 = string.substring(index1, lastIndex);
+			index2=args.indexOf(')',index1);
+			String arg3 = args.substring(index1, argLastIndex);
+			//summation uses a list of numbers
 			if(commaCheck == 1){
+				System.out.println("arg1: "+arg1+"arg3: "+arg3);
 				String[] list = Variable.listToArray(arg1);
-				string = string.substring(0, string.indexOf("sum(")) + summation(list, arg3)+string.substring(1+lastIndex);
+				string = string.substring(0, indexOfSum) + summation(list, arg3)+string.substring(1+lastIndex);
+				System.out.println("String after list sum: "+ string);
 			}
+			//summation uses counter
 			else{
 				int start,count;
 				try{
@@ -168,8 +200,7 @@ public class Solver {
 				}
 				catch(Exception e){
 					throw new InvalidInputException("First two arguments in summation function must be numbers.");
-				}
-				
+				}	
 				string = string.substring(0, string.indexOf("sum(")) + summation(start, count, 1, arg3)+string.substring(1+lastIndex);
 				System.out.println("summation final: "+string);
 			}	
@@ -183,6 +214,16 @@ public class Solver {
 		for(Function f : Function.getFunctions()){
 			while(string.contains(f.getName()+"(")){
 				System.out.println("contains function-----start------");
+				//check to make sure the name isn't just part of a word
+				int index = string.indexOf(f.getName());
+				if(index > 0){
+					if(Character.isLetter(string.charAt(index-1)))
+						break;
+				}
+				else if(index + f.getName().length() + 1 < string.length()){
+					if(Character.isLetter(string.charAt(index+f.getName().length()+1)))
+						break;
+				}
 				int beginIndex = string.indexOf('(', string.indexOf(f.getName()));
 				//count parenthesis
 				//count will start at 1 because the first index is a start paren and finish when the count is back to 0 by subtraction by
@@ -246,6 +287,58 @@ public class Solver {
 				System.out.println("contains function\n-----end------");
 			}
 		}
+		//
+		//
+		//
+		
+		//
+		//
+		//
+		//
+		//Check for lists and treat them as vectors at this point and return a vector
+		//take out all of the brackets and replace them with [] then switch them back after to avoid infinite loop  
+		if(string.contains("{")){
+			//shouldn't be any functions in the list at this point so we can split by comma
+			int index = string.indexOf('{');
+			int endIndex = string.indexOf('}');
+			//check to make sure vector is valid
+			int startcount=0, endcount=0;
+			for(int i = 0; i<string.length();i++){
+				switch (string.charAt(i)) {
+				case '{':
+					startcount++;
+					break;
+				case '}':
+					endcount++;
+					break;
+				}
+			}
+			//start is either after or right befor end cant have an empty list ex. {}
+			if(index >= endIndex-1)
+				throw new InvalidInputException("Inavlid vector/list format");
+			//too many starts and or ends
+			if(startcount != 1 || endcount != 1)
+				throw new InvalidInputException("Can only have one vector/list per function");
+			String list = string.substring(index+1, endIndex);
+			String[] listContents = list.split(",");
+			String result = "{";
+			if(listContents.length == 0)
+				throw new InvalidInputException("Can't use empty vector");
+			//solve the individual parts of the vector
+			for(int i = 0; i < listContents.length; i++){
+				String solveString = string.substring(0,index) + listContents[i] + string.substring(endIndex+1);
+				if(i != 0)
+					result += ",";
+				result += solveString(solveString);
+			}
+			
+			result += "}";
+			return result;
+		}
+		//switch back to normal brackets 
+		
+		//
+		//
 		//
 		//
 		//

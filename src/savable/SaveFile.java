@@ -1,10 +1,7 @@
-package FunctionStuff;
+package savable;
 import java.io.Serializable;
 import java.util.TreeMap;
 import java.util.Vector;
-
-import BasicCalculator.CalculatorFrame;
-import BasicCalculator.Variable;
 
 
 public class SaveFile implements Serializable {
@@ -12,16 +9,20 @@ public class SaveFile implements Serializable {
 
 	private Vector<Function> functions;
 	private TreeMap<String,String> variables;
-	private TreeMap<String,String> settingsDict;
+	private Vector<String> settings;
 	/**
-	 * Creates a new save file with a function list and memory dictionary 
+	 * Creates a new save file with a function list, memory dictionary, and current settings used
 	 * @param functs
 	 * @param nVariables
 	 */
 	public SaveFile(Vector<Function> functs, TreeMap<String,String> nVariables){
 		functions = functs;
 		variables = nVariables;
-		settingsDict = null;
+		settings = new Vector<String>();
+		for(Settings s : Settings.values()){
+			System.out.println("vals: "+s.get());
+			settings.add(s.get());
+		}
 	}
 	
 	/**
@@ -30,10 +31,11 @@ public class SaveFile implements Serializable {
 	 * @param nVariables
 	 * 
 	 */
-	public SaveFile(Vector<Function> functs, TreeMap<String,String> nVariables, TreeMap<String,String> settings){
+	public SaveFile(Vector<Function> functs, TreeMap<String,String> nVariables, Vector<String> nSettings){
 		functions = functs;
 		variables = nVariables;
-		settingsDict = settings;
+		settings = nSettings;
+		
 	}
 	
 	
@@ -49,10 +51,22 @@ public class SaveFile implements Serializable {
 	public TreeMap<String, String> getVariables() {
 		return variables;
 	}
-	
-	public TreeMap<String,String> getsSettingsDict(){
-		return settingsDict;
+	/**
+	 * Sets the settings according to the ones saved
+	 */
+	public void setSettings(){
+		int count = -1;
+		System.out.println("settings vals: " + settings.toString());
+		for(Settings s : Settings.values()){
+			count++;
+			if(count < settings.size())
+				s.set(settings.get(count));
+		}
 	}
+	/**
+	 * 
+	 * @return a file with all savable information
+	 */
 	public static SaveFile getSaveFile(){
 		return new SaveFile(Function.getFunctions(),Variable.getVariables());
 	}
