@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import savable.Function;
+import savable.UserFunction;
 
 
 
@@ -36,15 +36,15 @@ public class FunctionPanel extends JPanel {
 	
 	private CalculatorPanel panel;
 	
-	private Function funct;
+	private UserFunction funct;
 	/**
 	 * Creates a new FunctionPanel
 	 * @param loc location of panel
 	 * @param f Function for panel to display, null if creating a new function
 	 */
-	public FunctionPanel(Point loc, Function f, CalculatorPanel panel){
+	public FunctionPanel(Point loc, UserFunction f, CalculatorPanel panel){
 		funct = f;
-		setBounds(loc.x, loc.y, 335, 210);
+		setBounds(loc.x, loc.y, 490, 200);
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		setLayout(null);
 		this.panel = panel;
@@ -53,11 +53,11 @@ public class FunctionPanel extends JPanel {
 		lblFormula.setBounds(5, 35, 70, 20);
 		add(lblFormula);
 		
-		tfName.setBounds(90, 5, 200, 20);
+		tfName.setBounds(90, 5, 395, 20);
 		add(tfName);
-		tfFormula.setBounds(90, 35, 200, 20);
+		tfFormula.setBounds(90, 35, 395, 20);
 		add(tfFormula);
-		btnSolve.setBounds(85, 170, 60, 30);
+		btnSolve.setBounds(119, 170, 60, 30);
 		btnSolve.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -65,7 +65,7 @@ public class FunctionPanel extends JPanel {
 			}
 		});
 		add(btnSolve);
-		btnChange.setBounds(195, 170, 60, 30);
+		btnChange.setBounds(273, 170, 60, 30);
 		btnChange.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -81,18 +81,18 @@ public class FunctionPanel extends JPanel {
 		lblArgs.setBounds(5, 65, 90, 20);
 		//make text area like a label
 		lblHowTo = new JTextArea("" +
-				"To create a function enter the formula for it in the\n" +
-				"formula box. For the parameters use the formant\n" +
-				"\"(A1)\" for the first perameter and \"(A2)\" for the \n" +
-				"second and so on up to 4.\n" +
-				"Ex. (A1) * (A2) = arg1 * arg2\n" +
-				"To delete a function save it with an empty name.", 3, 10);
+				"To create a function enter the formula for it in the formula box. For the\n"
+				+"parameters use the formant \"(A1)\" for the first parameter and \"(A2)\" \n"
+				+"for the second and so on up to 4.\n" 
+				+"Ex. (A1) * (A2) = arg1 * arg2\n"
+				+"Ex. sum(1,10,1/(A1)) = sum from 1 to 10 of 1/arg1\n" 
+				+"To delete a function save it with an empty name.", 3, 10);
 		lblHowTo.setEditable(false);
 		lblHowTo.setOpaque(false);
 		lblHowTo.setFocusable(false);
 		lblHowTo.setCursor(null);
 		lblHowTo.setBorder(BorderFactory.createLineBorder(Color.black));
-		lblHowTo.setBounds(5, 65, 325, 98);
+		lblHowTo.setBounds(5, 65, 480, 98);
 		
 		//set specific function options
 		changeFunction(funct);
@@ -109,7 +109,7 @@ public class FunctionPanel extends JPanel {
 	 * Alters display to have attributes of the new function
 	 * @param f the function to show, null to create a new one
 	 */
-	public void changeFunction(Function f){
+	public void changeFunction(UserFunction f){
 		funct = f;
 		if(f != null){
 			tfName.setText(f.getName());
@@ -150,12 +150,12 @@ public class FunctionPanel extends JPanel {
 		System.out.println("name form "+tfName.getText()+" "+tfFormula.getText());
 		if (funct == null){
 			try {
-				new Function(tfName.getText(), tfFormula.getText());
+				new UserFunction(tfName.getText(), tfFormula.getText());
 				System.out.println("Save successful");
 				panel.display("Save successful for: " +tfName.getText(), true);
 				//update all the menus if save was successful
 				panel.updateMenuBar();
-				panel.showButtonPanel();
+				panel.hideFunctionPanel();
 			} catch (Exception e) {
 				if(panel != null)
 					panel.error(e.getMessage(),true);
@@ -164,10 +164,10 @@ public class FunctionPanel extends JPanel {
 		}
 		else{
 			try {
-				Function.getFunctions().remove(funct);
+				UserFunction.getFunctions().remove(funct);
 				//if name is empty dont save empty function
 				if(!tfName.getText().isEmpty()){
-					new Function(tfName.getText(), tfFormula.getText());
+					new UserFunction(tfName.getText(), tfFormula.getText());
 					panel.display("Save successful for: " +tfName.getText(), true);
 				}
 				else
@@ -175,7 +175,7 @@ public class FunctionPanel extends JPanel {
 				System.out.println("Save successful");
 				//update all the menus if save was successful
 				panel.updateMenuBar();
-				panel.showButtonPanel();
+				panel.hideFunctionPanel();
 
 			} catch (Exception e) {
 				if(panel != null)
@@ -183,7 +183,7 @@ public class FunctionPanel extends JPanel {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(Function.getFunctions());
+		System.out.println(UserFunction.getFunctions());
 	}
 	private void solvePressed(){
 		//if creating a new function, the button functions as a back button
@@ -209,6 +209,6 @@ public class FunctionPanel extends JPanel {
 				break;
 			}
 		}
-		panel.showButtonPanel();
+		panel.hideFunctionPanel();
 	}
 }

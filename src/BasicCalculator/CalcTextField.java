@@ -5,26 +5,35 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JTextField;
 
-import savable.Function;
+import savable.UserFunction;
+import Functions.*;
 
 
 public class CalcTextField extends JTextField {
 	private static final long serialVersionUID = -6095306387473105904L;
 	
+	//stored input in the case that they are putting something from history in the textfield
+	private String tempInput = "";
+	
 	public CalcTextField(){
+		setFocusTraversalKeysEnabled(false);
 		addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e){
 				CalculatorPanel panel = CalculatorFrame.getPanel();
 				panel.updateWidth();
+				panel.keyPressed();
+				System.out.println(e.getKeyCode());
 				//System.out.println("Key code: " + e.getKeyCode());
 				switch (e.getKeyCode()) {
 				//enter
 				case 10: 
+					tempInput = "";
 					panel.solve();
 					break;
 				//down
 				case 40:
+					
 					panel.moveLine(true);
 					
 					break;
@@ -37,6 +46,29 @@ public class CalcTextField extends JTextField {
 						setCaretPosition(carretPos);
 					}
 					break;
+				case KeyEvent.VK_TAB:
+					carretPos = getCaretPosition();
+					str = getText();
+					if(e.isShiftDown()){
+						//check to see if there is a comma behind and if so move to it
+						for(int i = carretPos; i > 0; i--){
+							if(str.charAt(i) == ','){
+								setCaretPosition(i);
+								break;
+							}
+						}
+					}
+					else{
+						//check to see if there is a comma ahead and if so move to it
+						for(int i = carretPos; i < str.length(); i++){
+							if(str.charAt(i) == ','){
+								setCaretPosition(i+1);
+								break;
+							}
+						}
+					}
+					
+					break;
 				case KeyEvent.VK_OPEN_BRACKET:
 					//auto complete '{'
 					if(e.isShiftDown()){
@@ -45,8 +77,11 @@ public class CalcTextField extends JTextField {
 					break;
 				//up
 				case 38:
+					if(tempInput.length() == 0)
+						tempInput = getText();
 					panel.moveLine(false);
 					break;
+				
 				//right paren
 				case 48:
 					if(e.isShiftDown()){
@@ -75,12 +110,17 @@ public class CalcTextField extends JTextField {
 				//check if a function name was just completed
 					String text = getText();
 					int caretPos = getCaretPosition();
-					for(Function funct : Function.getFunctions()){
+					for(NamedFunction funct : UserFunction.getAllFunctions()){
 						if(text.contains(funct.getName())){
-							//System.out.println("index: "+text.indexOf(funct.getName()));
+							//check to see if we are at the function name
 							if(text.indexOf(funct.getName()) == getCaretPosition()-(funct.getName().length())){
 								//check to make sure it isn't part of another word
 								int index = text.indexOf(funct.getName());
+								
+								//check to make sure that we haven't already inserted a paren
+								if(index+funct.getName().length() < text.length() && text.charAt(index+funct.getName().length()) == '(')
+									continue;
+								
 								//don't auto paren if it is
 								if(index > 0 && Character.isLetter(text.charAt(index-1)))
 									break;
@@ -108,18 +148,6 @@ public class CalcTextField extends JTextField {
 									}
 									setCaretPosition(caretPos-1);
 								}
-								else{
-									//delete end paren
-									index = text.indexOf(')', getCaretPosition()-1);
-									System.out.println("index: "+index);
-									if(index > -1){
-										if(text.length() > index+1)
-											text = text.substring(0, index) + text.substring(index+1);
-										else
-											text = text.substring(0, index);
-										setText(text);
-									}
-								}
 							}
 						}
 					}
@@ -141,116 +169,48 @@ public class CalcTextField extends JTextField {
 							setText(text.substring(0,text.indexOf("sum")+3)+"()");
 						setCaretPosition(caretPos+1);
 					}
-					//check for common functions
-					//
-					//
-					//check for asin
-					else if(text.contains("asin") && text.indexOf("asin") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("asin");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("asin")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("asin")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("asin")+3)+"()");
-						setCaretPosition(caretPos+1);
+				}	
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				super.keyPressed(e);
+				
+				switch(e.getKeyCode()){
+				case KeyEvent.VK_BACK_SPACE:
+				case KeyEvent.VK_DELETE:
+					//delete end paren
+					//find the correct paren and remove it
+					System.out.println("Text: " + getText());
+					if(getCaretPosition() > 0 && getText().charAt(getCaretPosition()-1) == '(')
+					{
+						String text = getText();
+						int count = 0;
+						int indexToRemove = -1;
+						for(int i = getCaretPosition(); i < text.length(); i++){
+							if(text.charAt(i) == '(')
+								count++;
+							else if(text.charAt(i) == ')'){
+								if(count == 0){
+									indexToRemove = i;
+									break;
+								}
+								else{
+									count--;
+								}
+							}
+						}
+						if(indexToRemove != -1){
+							System.out.println("need to remove");
+							if(text.length() > indexToRemove+1)
+								text = text.substring(0, indexToRemove) + text.substring(indexToRemove+1);
+							else
+								text = text.substring(0, indexToRemove);
+							int tempCar = getCaretPosition();
+							setText(text);
+							setCaretPosition(tempCar);
+						}
 					}
-					//check for acos
-					else if(text.contains("acos") && text.indexOf("acos") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("acos");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("acos")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("acos")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("acos")+3)+"()");
-						setCaretPosition(caretPos+1);
-					}
-					//check for atan
-					else if(text.contains("atan") && text.indexOf("atan") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("atan");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("atan")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("atan")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("atan")+3)+"()");
-						setCaretPosition(caretPos+1);
-					}
-					//check for sin
-					else if(text.contains("sin") && text.indexOf("sin") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("sin");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("sin")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("sin")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("sin")+3)+"()");
-						setCaretPosition(caretPos+1);
-					}
-					//check for cos
-					else if(text.contains("cos") && text.indexOf("cos") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("cos");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("cos")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("cos")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("cos")+3)+"()");
-						setCaretPosition(caretPos+1);
-					}
-					//check for tan
-					else if(text.contains("tan") && text.indexOf("tan") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("tan");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("tan")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("tan")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("tan")+3)+"()");
-						setCaretPosition(caretPos+1);
-					}
-					//check for ln
-					else if(text.contains("ln") && text.indexOf("ln") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("ln");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("ln")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("ln")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("ln")+3)+"()");
-						setCaretPosition(caretPos+1);
-					}
-					//check for log
-					else if(text.contains("log") && text.indexOf("log") == caretPos-3 && e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
-						//make sure it isn't part of another word
-						int index = text.indexOf("log");
-						if(index > 0 && Character.isLetter(text.charAt(index-1)))
-							break;
-						setText(text.substring(0,text.indexOf("log")+3)+"()");
-						if(getCaretPosition() < text.length())
-							setText(text.substring(0,text.indexOf("log")+3)+"()"+text.substring(caretPos+1));
-						else
-							setText(text.substring(0,text.indexOf("log")+3)+"()");
-						setCaretPosition(caretPos+1);
-					}
-					
-					
-					
 					break;
 				}
 			}
@@ -317,5 +277,14 @@ public class CalcTextField extends JTextField {
 	public void insertText(String text,int pos){
 		if(pos < getText().length()+1)
 			setText(getText().substring(0, pos)+text+getText().substring(pos));
+	}
+	
+	/**
+	 * Restores stored temp input
+	 */
+	public void restoreInput(){
+		if(tempInput.length() > 0)
+			setText(tempInput);
+		tempInput = "";
 	}
 }

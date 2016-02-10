@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import savable.Function;
+import savable.UserFunction;
 
 import BasicCalculator.CalculatorFrame;
 import BasicCalculator.CalculatorPanel;
@@ -29,10 +29,10 @@ public class FunctionMenu extends JMenu {
 	}
 	private void addFunctions(){
 		//create a menu of the functions
-		for(Function f : Function.getFunctions()){
+		for(UserFunction f : UserFunction.getFunctions()){
 			JMenuItem tempItem = new JMenuItem(f.getName());
 			add(tempItem);
-			final Function tempF = f;
+			final UserFunction tempF = f;
 			tempItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {

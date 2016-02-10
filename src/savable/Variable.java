@@ -2,6 +2,7 @@ package savable;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -16,8 +17,8 @@ public class Variable implements Serializable {
 	//
 	//STATIC 
 	//map variables
-	private static TreeMap<String,String> variables;
-	public static TreeMap<String,String> getVariables(){
+	private static HashMap<String,String> variables;
+	public static HashMap<String,String> getVariables(){
 		return variables;
 	}
 
@@ -38,7 +39,7 @@ public class Variable implements Serializable {
 	 * Use when opening from savefile
 	 * @param nVariables
 	 */
-	public static void setList(TreeMap<String,String> nVariables){
+	public static void setList(HashMap<String,String> nVariables){
 		variables = nVariables;
 		//refresh the menubar
 		CalculatorFrame.getPanel().updateMenuBar();
@@ -116,16 +117,17 @@ public class Variable implements Serializable {
 				key.equals("last") || key.equals("mem") || key.equals("x")){
 			throw new InvalidInputException("Variable name \""+key+"\" is already being used by the computer.");
 		}
-		for(Function f : Function.getFunctions()){
+		for(UserFunction f : UserFunction.getFunctions()){
 			if(f.getName().equals(key))
 				throw new InvalidInputException("There is already a function with the name: "+key);
 		}
 		
 		//create variable
 		if(variables  == null)
-			variables = new TreeMap<String,String>(new VariableComparator());
+			variables = new HashMap<String,String>();
 		variables.put(key, value);
 	}
+	
 	/**
 	 * Comparator for the variable list
 	 * @author JeremyLittel

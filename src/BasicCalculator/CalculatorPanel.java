@@ -1,5 +1,6 @@
 package BasicCalculator;
 
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
-import savable.Function;
+import savable.UserFunction;
 import savable.Settings;
 import savable.Variable;
 
@@ -21,15 +22,16 @@ import MenuBar.CalcMenuBar;
 public class CalculatorPanel extends JPanel {
 	private static final long serialVersionUID = 4995424473712070286L;
 	
-	private JLabel label;
+	private HistoryPanel history;
 	private CalcMenuBar menuBar;
 	private FunctionPanel functionPanel;
 	private CalcTextField textField;
 	private CalcButtonsPanel buttonPanel;
 	private CalculatorFrame frame;
-	//stuff for navigating previous commands 
-	private int currentLineIndex;
-	private ArrayList<String> previousLines;
+	
+	//used to log the last message so we don't show it again
+	private String lastMessage = "";
+	
 	private String lastValue;
 	
 	/**
@@ -38,31 +40,37 @@ public class CalculatorPanel extends JPanel {
 	 */
 	public CalculatorPanel(CalculatorFrame frm){
 		//create frame
-		setBounds(0, 0, 350, 320);
+		setBounds(0, 0, 500, 200);
 		setLayout(null);
 		frame = frm;
+		
+		Font defaultFont = new Font(getFont().getName(),getFont().getStyle(),getFont().getSize()+5);
+		setFont(defaultFont);
 		//create subviews
 		menuBar = new CalcMenuBar(this);
-		menuBar.setBounds(0, 0, 350, 20);
-		label = new JLabel(" Welcome");
-		label.setBounds(8, 53, 333, 18);
-		label.setBorder(LineBorder.createBlackLineBorder());
+		menuBar.setBounds(0, 0, 500, 20);
+		
+		history = new HistoryPanel();
+		history.addLine("Welcome to SuperCaluclator, for more info click 'Help'");
+		history.setBounds(8, 55, 484, 120);
+		history.setBorder(LineBorder.createBlackLineBorder());
+		
+		
 		textField = new CalcTextField();
-		textField.setBounds(5, 30, 340, 20);
+		textField.setBounds(-3, 17, 506, 40);
+		textField.setFont(defaultFont);
 		textField.setFocusable(true);
 		buttonPanel = new CalcButtonsPanel(this);
-		buttonPanel.setLocation(7, 80);
-		add(buttonPanel);
+		buttonPanel.setLocation(7, 120);
 		add(menuBar);
 		//add(buttonPanel);
 		add(textField);
-		add(label);
+		add(history);
 		
 		
 		//create function panel
 		try {
-			//functionPanel = new FunctionPanel(new Point(7,80),new Function("", "(1)(2)(3)(4)"),CalculatorManager.getManager());
-			functionPanel = new FunctionPanel(new Point(7,80), null,this);
+			functionPanel = new FunctionPanel(new Point(8,73), null,this);
 			functionPanel.setVisible(false);
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -70,17 +78,10 @@ public class CalculatorPanel extends JPanel {
 		add(functionPanel);
 		
 		lastValue = null;
-		previousLines = new ArrayList<String>();
-		currentLineIndex = -1;
+		
 	}
 
-	/**
-	 * 
-	 * @return the displaylabel
-	 */
-	public JLabel getLabel(){
-		return label;
-	}
+	
 	/**
 	 * 
 	 * @return the editable textfield
@@ -99,17 +100,23 @@ public class CalculatorPanel extends JPanel {
 	 * Shows the function panel with a specific function
 	 * @param f function to show, null if creating a new function
 	 */
-	public void showFunctionPanel(Function f){
+	public void showFunctionPanel(UserFunction f){
 		buttonPanel.setVisible(false);
+		history.setVisible(false);
 		functionPanel.setVisible(true);
+		frame.setBounds(frame.getBounds().x, frame.getBounds().y, frame.getBounds().width, 300);
+		setBounds(0,0,frame.getBounds().width,frame.getBounds().height);
 		functionPanel.changeFunction(f);
 	}
+
 	/**
-	 * Shows the button panel and hides the function panel
+	 * Hides the function panel and resets the window
 	 */
-	public void showButtonPanel(){
-		buttonPanel.setVisible(true);
+	public void hideFunctionPanel(){
+		history.setVisible(true);
 		functionPanel.setVisible(false);
+		frame.setBounds(frame.getBounds().x, frame.getBounds().y, frame.getBounds().width, 200);
+		setBounds(0,0,frame.getBounds().width,frame.getBounds().height);
 	}
 	/**
 	 * Updates the menubar items
@@ -123,16 +130,14 @@ public class CalculatorPanel extends JPanel {
 	public void updateWidth(){
 		//get the actual width of text and set the width of everything else to match
 		FontMetrics metrics = getGraphics().getFontMetrics();
-		int labelDif = (label.getWidth()- metrics.stringWidth(label.getText())) - 15;
-		int textFieldDif = (textField.getWidth() - metrics.stringWidth(textField.getText())) - 20;
-		if(labelDif <= 0){
-			extendside(frame.getWidth() - labelDif);
-		}
+
+		int textFieldDif = (textField.getWidth() - metrics.stringWidth(textField.getText())) - 50;
+		
 		if(textFieldDif <= 0){
 			extendside(frame.getWidth() - textFieldDif);
 		}
-		if(frame.getWidth() > 350 && labelDif > 0 && textFieldDif > 0){
-			extendside(350);
+		if(frame.getWidth() > 350 && textFieldDif > 0){
+			extendside(500);
 		}
 		
 	}
@@ -145,8 +150,8 @@ public class CalculatorPanel extends JPanel {
 		f.setBounds(f.getLocation().x, f.getLocation().y, width, f.getHeight());
 		JTextField tf = textField;
 		setBounds(getLocation().x, getLocation().y, width, getHeight());
-		JLabel l = label;
-		tf.setBounds(tf.getLocation().x, tf.getLocation().y, f.getWidth()-11, tf.getHeight());
+		HistoryPanel l = history;
+		tf.setBounds(tf.getLocation().x, tf.getLocation().y, f.getWidth()+6, tf.getHeight());
 		l.setBounds(l.getLocation().x, l.getLocation().y, f.getWidth()-17, l.getHeight());
 		//update menubar
 		CalcMenuBar mBar = menuBar;
@@ -160,13 +165,7 @@ public class CalculatorPanel extends JPanel {
 		
 		try {
 			String string = textField.getText();
-			//check for no input
-			if(string.length() == 0){
-				//insert the selected line in the label
-				textField.setText(label.getText().substring(0, label.getText().indexOf("=")-1));
-				currentLineIndex =	previousLines.size()-1;
-				return;
-			}
+			if(string.length() == 0)return;//unsolvable
 			if(string.equals("save")){
 				menuBar.autoSave();
 			}
@@ -179,7 +178,6 @@ public class CalculatorPanel extends JPanel {
 				return;
 			}
 			//clear display
-			display("",false);
 			//check to see if they want to remove a variable
 			if(string.contains("remove")){
 				if(string.indexOf("remove") != 0){
@@ -232,6 +230,7 @@ public class CalculatorPanel extends JPanel {
 				else
 					string = string.substring(0,index) + string.substring(index+1);
 			}
+			
 			System.out.println(string);
 			
 			//creating a new variable
@@ -271,17 +270,15 @@ public class CalculatorPanel extends JPanel {
 			string = string + " = " + answer;
 			setTextField("");
 			lastValue = answer;
-			if (!label.getText().contains("Error")) {
+			history.setAnswer(answer);
+			if (!history.getText().contains("Error")) {
 				display(original+" = "+answer,false);
 			}	
-			//store in previous lines
-			previousLines.add(label.getText());
-			currentLineIndex++;
-			System.out.println("Current line: " + currentLineIndex);
+			
 		
 		} catch (Exception e) {
 			e.printStackTrace();
-			error(e.getMessage(),false);
+			error(e.getMessage(),true);
 		}
 		updateWidth();
 	}
@@ -299,20 +296,36 @@ public class CalculatorPanel extends JPanel {
 	public void addToTextField(String text){
 		textField.addText(text);
 	}
+	
+	/**
+	 * Call every time a key is pressed
+	 */
+	public void keyPressed(){
+		history.setAnswer("...");
+		AutoSolve.solve(textField.getText(), history.getAnsLabel());
+	}
+	
 	/**
 	 * moves display down or up 
 	 * @param down true to move down, false to move up
 	 */
 	public void moveLine(boolean down){
+	
+		if(down){
+			if(!history.shiftDown()){
+				textField.restoreInput();
+			}
+		}
+		else if(history.getText().contains("=")){
+			
+			history.shiftUp();
+			//set the textfield 
+			String toInsert = history.getUpperFront();
+			if(toInsert.length() > 0 && toInsert.contains("=")){
+				textField.setText(toInsert.substring(0,toInsert.indexOf("=")-1));
+			}
+		}
 		
-		if(down && currentLineIndex > 0){
-			currentLineIndex--;
-			display(previousLines.get(currentLineIndex),false);
-		}
-		else if(!down && currentLineIndex < previousLines.size()-1){
-			currentLineIndex++;
-			display(previousLines.get(currentLineIndex),false);
-		}
 	}
 	/**
 	 * Displays a message to the user
@@ -321,9 +334,17 @@ public class CalculatorPanel extends JPanel {
 	 */
 	public void display(String message,boolean showDialog){
 		updateWidth();
-		label.setText(message);
-		if(showDialog)
-			JOptionPane.showMessageDialog(frame, message, "Super Calculator", JOptionPane.INFORMATION_MESSAGE);
+		message = message.replace('\n', ' ');
+		history.addLine(message);
+		if(showDialog){
+			if(message.equals(lastMessage)){
+				lastMessage = "";
+			}
+			else{
+				lastMessage = message;
+				JOptionPane.showMessageDialog(frame, message, "Super Calculator", JOptionPane.INFORMATION_MESSAGE);
+			}
+		}
 		updateWidth();
 	}
 	/**
@@ -332,9 +353,14 @@ public class CalculatorPanel extends JPanel {
 	 * @param showDialog true to show error dialog
 	 */
 	public void error(String message, boolean showDialog){
-		display("Error: "+message,false);
-		if(showDialog)
-			JOptionPane.showMessageDialog(frame, "Error: "+message, "Error", JOptionPane.ERROR_MESSAGE);
+		if(message.equals(lastMessage)){
+			lastMessage = "";
+		}
+		else{
+			lastMessage = message;
+			JOptionPane.showMessageDialog(textField, "Error: "+message, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+			
 	}
 	
 }

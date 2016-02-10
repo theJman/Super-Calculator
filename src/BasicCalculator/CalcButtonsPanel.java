@@ -22,11 +22,13 @@ public class CalcButtonsPanel extends JPanel {
 	 * Create the panel.
 	 */
 	public CalcButtonsPanel(CalculatorPanel panel) {
-		setBounds(0, 0, 335, 210);
+		setBounds(0, 0, 495, 210);
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		setLayout(null);
 		
 		calcPanel = panel;
+		
+		/*
 		JButton btnNewButton = new JButton("7");
 		btnNewButton.setBounds(157, 35, 30, 25);
 		btnNewButton.addActionListener(new ActionListener() {
@@ -186,7 +188,7 @@ public class CalcButtonsPanel extends JPanel {
 			}
 		});
 		add(button_14);
-		
+		*/
 		JButton btnSolve = new JButton("Solve");
 		btnSolve.setToolTipText("solve");
 		btnSolve.setBounds(157, 183, 172, 25);

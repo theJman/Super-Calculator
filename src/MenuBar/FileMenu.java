@@ -15,7 +15,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import savable.Function;
+import savable.UserFunction;
 import savable.SaveFile;
 import savable.Variable;
 
@@ -60,8 +60,8 @@ public class FileMenu extends JMenu {
 			public void actionPerformed(ActionEvent arg0) {
 				if(JOptionPane.showConfirmDialog(null, "Are you sure you want to erase all user created functions?", "Are you sure?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION){
 					System.out.println("Removing Functions");
-					Function.getFunctions().clear();
-					System.out.println(Function.getFunctions());
+					UserFunction.getFunctions().clear();
+					System.out.println(UserFunction.getFunctions());
 					menuBar.updateFunctions();
 				}
 				
@@ -105,7 +105,7 @@ public class FileMenu extends JMenu {
 				saveFile = (SaveFile) input.readObject();
 				input.close();
 				Variable.setList(saveFile.getVariables());
-				Function.setFunctions(saveFile.getFunctions());
+				UserFunction.setFunctions(saveFile.getFunctions());
 				menuBar.updateFunctions();
 				System.out.println("Open Success");
 			} catch (Exception e) {
@@ -175,7 +175,7 @@ public class FileMenu extends JMenu {
 			saveFile = (SaveFile) input.readObject();
 			input.close();
 			Variable.setList(saveFile.getVariables());
-			Function.setFunctions(saveFile.getFunctions());
+			UserFunction.setFunctions(saveFile.getFunctions());
 			saveFile.setSettings();
 			menuBar.updateFunctions();
 			System.out.println("Open Success");

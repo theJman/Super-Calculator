@@ -4,7 +4,8 @@ public class InvalidInputException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-	private String message;
+	protected String message;
+	
 	/**
 	 * Constructs a new InvalidInputException with a standerd message
 	 */

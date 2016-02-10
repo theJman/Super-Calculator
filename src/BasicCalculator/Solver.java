@@ -5,7 +5,9 @@ import java.util.Vector;
 
 import javax.swing.JLabel;
 
-import savable.Function;
+import Functions.NamedFunction;
+import Functions.SystemFunction;
+import savable.UserFunction;
 import savable.Variable;
 
 
@@ -16,21 +18,53 @@ import savable.Variable;
  *
  */
 public class Solver {
+	
+	/**
+	 * Solves a math function with functions in addition to the system functions
+	 * @param string
+	 * @return
+	 * @throws InvalidInputException
+	 */
+	public static String solveStringWithAddedFunctions(String string, ArrayList<NamedFunction> functions) throws InvalidInputException{
+		ArrayList<NamedFunction> funcs = SystemFunction.getAll();
+		funcs.addAll(functions);
+		return solveStringWithFunctions(string, funcs);
+	}
+	
+	/**
+	 * Solves a math function with just the system functions
+	 * @param string
+	 * @return
+	 * @throws InvalidInputException
+	 */
+	public static String solveString(String string) throws InvalidInputException{
+		return solveStringWithFunctions(string, SystemFunction.getAll());
+	}
+	
 	/**
 	 * Solves a math function in the format of a string and returns a number in the format of a string
 	 * @param string
 	 * @return answer to the function
 	 * @throws InvalidInputException
 	 */
-	public static String solveString(String string) throws InvalidInputException{
+	public static String solveStringWithFunctions(String string, ArrayList<NamedFunction> functions) throws InvalidInputException{
 		if(string == null || string.length() == 0)
 			throw new InvalidInputException("Can not solve a blank string");
 		
-		//System.out.println("Starting String: "+ string);
-		//make sure number is in front of round
-		if(string.indexOf("round") == 0)
-			string = "1"+string;
-
+		//remove spaces
+		if(string.substring(string.length()-1).equals(" "))
+			string = string.substring(0,string.length()-1);
+		while(string.contains(" ")){
+			
+			int index = string.indexOf(" ");
+			System.out.println(index);
+			
+			if(string.charAt(0) == ' ')
+				string = string.substring(1);
+			else
+				string = string.substring(0,index) + string.substring(index+1);
+		}
+		
 		//replace variables 
 		//replaces the longest ones first to avoid short variables breaking up long ones
 		if(Variable.hasVars()){
@@ -60,10 +94,12 @@ public class Solver {
 		}
 		
 		//doesn't start with a number so add one
+		/*
 		if(string.charAt(0) != '-' &&
 				string.charAt(0) != '.' &&
 				!Character.isDigit(string.charAt(0)))
 			string = "0+" + string;
+			*/
 		
 		//make sure it can multiply numbers to parentheses ex. 2(2) = 4
 		boolean doneChecking = false;
@@ -81,6 +117,7 @@ public class Solver {
 					doneChecking = true;
 			}
 		}
+		
 		//check for e
 		int countE = 0;
 		for(int i = 0; i<string.length();i++){
@@ -102,6 +139,7 @@ public class Solver {
 				string = string.substring(0,index) + Math.E + string.substring(index+1);
 
 		}
+		
 		
 		//check for rand
 		while(string.contains("rand")){
@@ -205,91 +243,93 @@ public class Solver {
 				System.out.println("summation final: "+string);
 			}	
 		}
+		
 		//
 		//
 		//
 		//check for functions
 		//
 		//
-		for(Function f : Function.getFunctions()){
-			while(string.contains(f.getName()+"(")){
-				System.out.println("contains function-----start------");
-				//check to make sure the name isn't just part of a word
-				int index = string.indexOf(f.getName());
-				if(index > 0){
-					if(Character.isLetter(string.charAt(index-1)))
-						break;
-				}
-				else if(index + f.getName().length() + 1 < string.length()){
-					if(Character.isLetter(string.charAt(index+f.getName().length()+1)))
-						break;
-				}
-				int beginIndex = string.indexOf('(', string.indexOf(f.getName()));
-				//count parenthesis
-				//count will start at 1 because the first index is a start paren and finish when the count is back to 0 by subtraction by
-				//each end paren
-				int count = 0,endIndex = -1;
-				for(int i = beginIndex; i<string.length();i++){
-					if(string.charAt(i) == '(')
-						count++;
-					else if(string.charAt(i) == ')')
-						count--;
-					if(count == 0){
-						//found the right index
-						endIndex = i;
-						//since we already found the index loop is pointless
-						break;
+		boolean checkForFunctions = true;
+		while(checkForFunctions){
+			checkForFunctions = false;
+			for(Functions.NamedFunction f : UserFunction.getAllFunctions()){
+				while(string.contains(f.getName()+"(")){
+					System.out.println("contains system function-----start------" + f.getName());
+					//check to make sure the name isn't just part of a word
+					int index = string.indexOf(f.getName());
+					if(index > 0){
+						if(Character.isLetter(string.charAt(index-1)))
+							break;
 					}
-				}
-				//make sure we found the right index
-				if(endIndex == -1)
-					throw new InvalidInputException("Check your parenthesis");
-				String args = string.substring(beginIndex+1, endIndex);
-				Vector<String> argsVec = new Vector<String>();
-				int bracketCount = 0;
-				int argCount = 1;
-				for(int i = 0; i<args.length(); i++){
-					switch (args.charAt(i)) {
-					case '{':
-						bracketCount++;
-						break;
-					case '}':
-						bracketCount--;
-						break;
+//					else if(index + f.getName().length() + 1 < string.length()){
+//						if(Character.isLetter(string.charAt(index+f.getName().length()+1)))
+//							break;
+//					}
+					int beginIndex = string.indexOf('(', string.indexOf(f.getName()));
+					//count parenthesis
+					//count will start at 1 because the first index is a start paren and finish when the count is back to 0 by subtraction by
+					//each end paren
+					int count = 0,endIndex = -1;
+					for(int i = beginIndex; i<string.length();i++){
+						if(string.charAt(i) == '(')
+							count++;
+						else if(string.charAt(i) == ')')
+							count--;
+						if(count == 0){
+							//found the right index
+							endIndex = i;
+							//since we already found the index loop is pointless
+							break;
+						}
+					}
+					//make sure we found the right index
+					if(endIndex == -1)
+						throw new InvalidInputException("Check your parenthesis");
+					String args = string.substring(beginIndex+1, endIndex);
+					ArrayList<String> argsArray = new ArrayList<String>();
+					
+					int bracketCount = 0;
+					int argCount = 1;
+					for(int i = 0; i<args.length(); i++){
+						switch (args.charAt(i)) {
+						case '{':
+						case '(':
+							bracketCount++;
+							break;
+						case '}':
+						case ')':
+							bracketCount--;
+							break;
+						}
+						
+						//make sure it isn't a comma inside of a bracket
+						if(args.charAt(i) == ',' && bracketCount == 0){
+							argCount++;
+							System.out.println("another");
+						}
+						else if(argsArray.size() < argCount){
+							argsArray.add(""+args.charAt(i));
+						}
+						else{
+							argsArray.set(argCount-1, argsArray.get(argCount-1)+args.charAt(i));
+						}	
 					}
 					
-					if(args.charAt(i) == ',' && bracketCount == 0){
-						argCount++;
-						System.out.println("another");
-					}
-					else if(argsVec.size() < argCount){
-						argsVec.add(""+args.charAt(i));
-					}
-					else{
-						argsVec.set(argCount-1, argsVec.get(argCount-1)+args.charAt(i));
-					}	
-				}
-				if(f.getNumOfArgs() != argsVec.size()){
-					//incorrect amount of args
-					System.out.println(argsVec.get(0));
-					throw new InvalidInputException("Invalid number of args for function:"+f.getName());
-				}
-				String[] argsArray = new String[argsVec.size()];
-				for(int i = 0; i<argsVec.size();i++){
-					argsArray[i] = argsVec.get(i);
-				}
-				//correct num of args so replace function with the answer to it
-				System.out.println("string to replace: "+string.substring(string.indexOf(f.getName()), endIndex+1));
-				System.out.println(f.solveFunction(argsArray));
-				string = string.substring(0, string.indexOf(f.getName())) +  f.solveFunction(argsArray) + string.substring(endIndex+1);
-				System.out.println("final: "+ string);
+					
+					//correct num of args so replace function with the answer to it
+					System.out.println("string to replace: "+string.substring(string.indexOf(f.getName()), endIndex+1));
+					System.out.println(f.eval(argsArray));
+					string = string.substring(0, string.indexOf(f.getName())) +  f.eval(argsArray) + string.substring(endIndex+1);
+					System.out.println("final: "+ string);
 
-				System.out.println("contains function\n-----end------");
+					System.out.println("contains system function\n-----end------");
+				}
 			}
 		}
-		//
-		//
-		//
+		
+		
+		
 		
 		//
 		//
@@ -480,6 +520,9 @@ public class Solver {
 		//make sure they have to correct amount of signs
 		if(numbers.size() != 1 + signs.size()){
 			System.out.println("problem: "+string);
+			if(signs.size() == 1){
+				throw new InvalidInputException("Invalid sign/variable/function: '"+signs.get(0)+"'");
+			}
 			throw new InvalidInputException();
 		}
 		//10 5 20
@@ -494,507 +537,6 @@ public class Solver {
 			numbers.add(index, num);
 			
 		}
-		//functions
-		while(signs.contains("^ln")){
-			int index = signs.indexOf("^ln");
-			double num =  Math.pow(numbers.get(index), Math.log(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^log")){
-			int index = signs.indexOf("^log");
-			double num =  Math.pow(numbers.get(index), Math.log10(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^sqrt")){
-			int index = signs.indexOf("^sqrt");
-			if(numbers.get(index+1) < 0)
-				return "Imaginary";
-			double num =  Math.pow(numbers.get(index), Math.sqrt(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^sin")){
-			int index = signs.indexOf("^sin");
-			double num =  Math.pow(numbers.get(index), Math.sin(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^cos")){
-			int index = signs.indexOf("^cos");
-			double num =  Math.pow(numbers.get(index), Math.cos(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^tan")){
-			int index = signs.indexOf("^tan");
-			double num =  Math.pow(numbers.get(index), Math.tan(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^asin")){
-			int index = signs.indexOf("^asin");
-			double num =  Math.pow(numbers.get(index), Math.asin(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^acos")){
-			int index = signs.indexOf("^acos");
-			double num = Math.pow(numbers.get(index), Math.acos(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("^atan")){
-			int index = signs.indexOf("^atan");
-			double num = Math.pow(numbers.get(index), Math.atan(numbers.get(index+1)));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		
-		while(signs.contains("*ln")){
-			int index = signs.indexOf("*ln");
-			double num = numbers.get(index) * Math.log(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*log")){
-			int index = signs.indexOf("*log");
-			double num = numbers.get(index) * Math.log10(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*sqrt")){
-			int index = signs.indexOf("*sqrt");
-			if(numbers.get(index+1) < 0)
-				return "Imaginary";
-			double num = numbers.get(index) * Math.sqrt(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*sin")){
-			int index = signs.indexOf("*sin");
-			double num = numbers.get(index) * Math.sin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*cos")){
-			int index = signs.indexOf("*cos");
-			double num = numbers.get(index) * Math.cos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*tan")){
-			int index = signs.indexOf("*tan");
-			double num = numbers.get(index) * Math.tan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*asin")){
-			int index = signs.indexOf("*asin");
-			double num = numbers.get(index) * Math.asin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*acos")){
-			int index = signs.indexOf("*acos");
-			double num = numbers.get(index) * Math.acos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("*atan")){
-			int index = signs.indexOf("*atan");
-			double num = numbers.get(index) * Math.atan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/ln")){
-			int index = signs.indexOf("/ln");
-			double num = numbers.get(index) / Math.log(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/log")){
-			int index = signs.indexOf("/log");
-			double num = numbers.get(index) / Math.log10(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/sqrt")){
-			int index = signs.indexOf("/sqrt");
-			if(numbers.get(index+1) < 0)
-				return "Imaginary";
-			double num = numbers.get(index) / Math.sqrt(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/sin")){
-			int index = signs.indexOf("/sin");
-			double num = numbers.get(index) / Math.sin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/cos")){
-			int index = signs.indexOf("/cos");
-			double num = numbers.get(index) / Math.cos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/tan")){
-			int index = signs.indexOf("/tan");
-			double num = numbers.get(index) / Math.tan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/asin")){
-			int index = signs.indexOf("/asin");
-			double num = numbers.get(index) / Math.asin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/acos")){
-			int index = signs.indexOf("/acos");
-			double num = numbers.get(index) / Math.acos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("/atan")){
-			int index = signs.indexOf("/atan");
-			double num = numbers.get(index) / Math.atan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+ln")){
-			int index = signs.indexOf("+ln");
-			double num = numbers.get(index) + Math.log(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+log")){
-			int index = signs.indexOf("+log");
-			double num = numbers.get(index) + Math.log10(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+sqrt")){
-			int index = signs.indexOf("+sqrt");
-			if(numbers.get(index+1) < 0)
-				return "Imaginary";
-			double num = numbers.get(index) + Math.sqrt(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+sin")){
-			int index = signs.indexOf("+sin");
-			double num = numbers.get(index) + Math.sin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+cos")){
-			int index = signs.indexOf("+cos");
-			double num = numbers.get(index) + Math.cos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+tan")){
-			int index = signs.indexOf("+tan");
-			double num = numbers.get(index) + Math.tan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+asin")){
-			int index = signs.indexOf("+asin");
-			double num = numbers.get(index) + Math.asin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+acos")){
-			int index = signs.indexOf("+acos");
-			double num = numbers.get(index) + Math.acos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("+atan")){
-			int index = signs.indexOf("+atan");
-			double num = numbers.get(index) + Math.atan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-ln")){
-			int index = signs.indexOf("-ln");
-			double num = numbers.get(index) - Math.log(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-log")){
-			int index = signs.indexOf("-log");
-			double num = numbers.get(index) - Math.log10(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-sqrt")){
-			int index = signs.indexOf("-sqrt");
-			if(numbers.get(index+1) < 0)
-				return "Imaginary";
-			double num = numbers.get(index) - Math.sqrt(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-sin")){
-			int index = signs.indexOf("-sin");
-			double num = numbers.get(index) - Math.sin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-cos")){
-			int index = signs.indexOf("-cos");
-			double num = numbers.get(index) - Math.cos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-tan")){
-			int index = signs.indexOf("-tan");
-			double num = numbers.get(index) - Math.tan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-asin")){
-			int index = signs.indexOf("-asin");
-			double num = numbers.get(index) - Math.asin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-acos")){
-			int index = signs.indexOf("-acos");
-			double num = numbers.get(index) - Math.acos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("-atan")){
-			int index = signs.indexOf("-atan");
-			double num = numbers.get(index) - Math.atan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%ln")){
-			int index = signs.indexOf("%ln");
-			double num = numbers.get(index) % Math.log(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%log")){
-			int index = signs.indexOf("%log");
-			double num = numbers.get(index) % Math.log10(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%sqrt")){
-			int index = signs.indexOf("%sqrt");
-			if(numbers.get(index+1) < 0)
-				return "Imaginary";
-			double num = numbers.get(index) % Math.sqrt(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%sin")){
-			int index = signs.indexOf("%sin");
-			double num = numbers.get(index) % Math.sin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%cos")){
-			int index = signs.indexOf("%cos");
-			double num = numbers.get(index) % Math.cos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%tan")){
-			int index = signs.indexOf("%tan");
-			double num = numbers.get(index) % Math.tan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%asin")){
-			int index = signs.indexOf("%asin");
-			double num = numbers.get(index) % Math.asin(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%acos")){
-			int index = signs.indexOf("%acos");
-			double num = numbers.get(index) % Math.acos(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		while(signs.contains("%atan")){
-			int index = signs.indexOf("%atan");
-			double num = numbers.get(index) % Math.atan(numbers.get(index+1));
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		
 		//exponents
 		while(signs.contains("^")){
 			int index = signs.indexOf("^");
@@ -1016,53 +558,47 @@ public class Solver {
 			
 		}
 		
-		//multiplication
-		while(signs.contains("*")){
-			int index = signs.indexOf("*");
-			double num = numbers.get(index) * numbers.get(index+1);
+		//multiplication | division
+		while(signs.contains("*") || signs.contains("/")){
+			int index = 0;
+			int multIndex = signs.indexOf("*");
+			int divIndex = signs.indexOf("/");
+			double num = 0.0;
+			if(multIndex == -1 || (divIndex != -1 && divIndex < multIndex)){
+				//divide
+				index = divIndex;
+				num = numbers.get(index) / numbers.get(index+1);
+			}
+			else{
+				index = multIndex;
+				num = numbers.get(index) * numbers.get(index+1);
+			}			
 			signs.remove(index);
 			numbers.remove(index);
 			numbers.remove(index);
 			numbers.add(index, num);
-			
 		}
 		
-	
-		//division 
-		while(signs.contains("/")){
-			int index = signs.indexOf("/");
-			double num = numbers.get(index) / numbers.get(index+1);
+		//addition | subtraction
+		while(signs.contains("+") || signs.contains("-")){
+			int index = 0;
+			int addIndex = signs.indexOf("+");
+			int subIndex = signs.indexOf("-");
+			double num = 0.0;
+			if(addIndex == -1 || (subIndex != -1 && subIndex < addIndex)){
+				//divide
+				index = subIndex;
+				num = numbers.get(index) - numbers.get(index+1);
+			}
+			else{
+				index = addIndex;
+				num = numbers.get(index) + numbers.get(index+1);
+			}			
 			signs.remove(index);
 			numbers.remove(index);
 			numbers.remove(index);
 			numbers.add(index, num);
-			
 		}
-		
-	
-		//addition
-		while(signs.contains("+")){
-			int index = signs.indexOf("+");
-			double num = numbers.get(index) + numbers.get(index+1);
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-	
-	
-		//subtraction
-		while(signs.contains("-")){
-			int index = signs.indexOf("-");
-			double num = numbers.get(index) - numbers.get(index+1);
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
-			
-		}
-		
 		
 		//remainder division
 		while(signs.contains("%")){
@@ -1073,20 +609,6 @@ public class Solver {
 			numbers.remove(index);
 			numbers.add(index, num);
 			
-		}
-		//rounding
-		while(signs.contains("round")){
-			int index = signs.indexOf("round");
-			int place = (int) (double)numbers.get(index);
-			if(place == 0)place = 1;
-			double num = numbers.get(index+1);
-			num *= place;
-			num = Math.round(num);
-			num /= place;
-			signs.remove(index);
-			numbers.remove(index);
-			numbers.remove(index);
-			numbers.add(index, num);
 		}
 		
 		//check to see if there are still signs left if so then the sign in not supported

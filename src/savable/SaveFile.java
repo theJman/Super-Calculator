@@ -1,5 +1,7 @@
 package savable;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -7,15 +9,15 @@ import java.util.Vector;
 public class SaveFile implements Serializable {
 	private static final long serialVersionUID = 7251358295845702084L;
 
-	private Vector<Function> functions;
-	private TreeMap<String,String> variables;
+	private ArrayList<UserFunction> functions;
+	private HashMap<String,String> variables;
 	private Vector<String> settings;
 	/**
 	 * Creates a new save file with a function list, memory dictionary, and current settings used
 	 * @param functs
 	 * @param nVariables
 	 */
-	public SaveFile(Vector<Function> functs, TreeMap<String,String> nVariables){
+	public SaveFile(ArrayList<UserFunction> functs, HashMap<String,String> nVariables){
 		functions = functs;
 		variables = nVariables;
 		settings = new Vector<String>();
@@ -31,7 +33,7 @@ public class SaveFile implements Serializable {
 	 * @param nVariables
 	 * 
 	 */
-	public SaveFile(Vector<Function> functs, TreeMap<String,String> nVariables, Vector<String> nSettings){
+	public SaveFile(ArrayList<UserFunction> functs, HashMap<String,String> nVariables, Vector<String> nSettings){
 		functions = functs;
 		variables = nVariables;
 		settings = nSettings;
@@ -42,13 +44,13 @@ public class SaveFile implements Serializable {
 	/**
 	 * @return the functions
 	 */
-	public Vector<Function> getFunctions() {
+	public ArrayList<UserFunction> getFunctions() {
 		return functions;
 	}
 	/**
 	 * @return the variables
 	 */
-	public TreeMap<String, String> getVariables() {
+	public HashMap<String, String> getVariables() {
 		return variables;
 	}
 	/**
@@ -68,6 +70,6 @@ public class SaveFile implements Serializable {
 	 * @return a file with all savable information
 	 */
 	public static SaveFile getSaveFile(){
-		return new SaveFile(Function.getFunctions(),Variable.getVariables());
+		return new SaveFile(UserFunction.getFunctions(),Variable.getVariables());
 	}
 }

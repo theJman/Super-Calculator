@@ -1,16 +1,10 @@
 package BasicCalculator;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.util.TreeMap;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
 
 import savable.Settings;
-
-import MenuBar.CalcMenuBar;
 
 /**
  * @author JeremyLittel
@@ -27,10 +21,13 @@ public class CalculatorFrame extends JFrame {
 	 */
 	public CalculatorFrame(){
 		//create frame
-		setBounds(250, 150, 350, 320);
+		setBounds(250, 150, 500, 200);
 		setLayout(null);
 		setTitle("Super Calculator");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		//setExtendedState(JFrame.MAXIMIZED_BOTH);
+		//setUndecorated(true);
+		
 		setResizable(false);		
 		calcPanel = new CalculatorPanel(this);
 		add(calcPanel);

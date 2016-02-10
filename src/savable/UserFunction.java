@@ -1,69 +1,82 @@
 package savable;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
 import BasicCalculator.InvalidInputException;
 import BasicCalculator.Solver;
+import Functions.InvalidFunctionUseException;
+import Functions.NamedFunction;
+import Functions.SystemFunction;
 /**
  * 
  * @author JeremyLittel
  */
 
-public class Function implements Serializable{
+public class UserFunction implements Serializable, Functions.NamedFunction{
 
 	//static list of functions
 	//
 	//
-	private static Vector<Function> functions;
+	private static ArrayList<UserFunction> functions;
 	
 	private static final long serialVersionUID = 3477901669782017960L;
 	/**
 	 * 
 	 * @return a list of the functions
 	 */
-	public static Vector<Function> getFunctions(){
+	public static ArrayList<UserFunction> getFunctions(){
 		
 		if(functions == null){
-			functions = new Vector<Function>();
+			functions = new ArrayList<UserFunction>();
 			//add example functions
 			try {
-				new Function("add", "(A1)+(A2)");
-				new Function("subtract", "(A1)-(A2)");
-				new Function("multiply", "(A1)*(A2)");
-				new Function("divide", "(A1)/(A2)");
-				new Function("count", "sum((A1),1)");
-				new Function("mean", "sum((A1),x)/count((A1))");
-				new Function("stddev", "sqrt(sum((A1), (x-mean((A1)))^2)/(count((A1))-1))");
+				new UserFunction("add", "(A1)+(A2)");
+				new UserFunction("subtract", "(A1)-(A2)");
+				new UserFunction("multiply", "(A1)*(A2)");
+				new UserFunction("divide", "(A1)/(A2)");
+				new UserFunction("count", "sum((A1),1)");
+				new UserFunction("mean", "sum((A1),x)/count((A1))");
+				new UserFunction("stddev", "sqrt(sum((A1), (x-mean((A1)))^2)/(count((A1))-1))");
 			} catch (InvalidInputException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		//sort functions according to name
-		Collections.sort(functions, new Comparator<Function>() {
+		Collections.sort(functions, new Comparator<UserFunction>() {
 			@Override
-			public int compare(Function o1, Function o2) {
+			public int compare(UserFunction o1, UserFunction o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
 		return functions;
 	}
+	
+	public static ArrayList<NamedFunction> getAllFunctions(){
+		ArrayList<NamedFunction> retVal = SystemFunction.getAll();
+		for(NamedFunction f : getFunctions()){
+			retVal.add(f);
+		}
+		return retVal;
+	}
+	
 	/**
 	 * @param functions the functions to set
 	 */
-	public static void setFunctions(Vector<Function> functions) {
-		Function.functions = functions;
+	public static void setFunctions(ArrayList<UserFunction> functions) {
+		UserFunction.functions = functions;
 	}
 	/**
 	 * Use to add a new function to the list of functions. This will check to make sure a duplicate function isn't being added
 	 * @param newF function to add
 	 * @throws InvalidInputException
 	 */
-	public static void addToFunctions(Function newF) throws InvalidInputException{
+	public static void addToFunctions(UserFunction newF) throws InvalidInputException{
 		//check to make sure it isn't a duplicate
 		System.out.println(functions);
-		for(Function f: getFunctions()){
+		for(UserFunction f: getFunctions()){
 			if(f.getName().equalsIgnoreCase(newF.getName())){
 				System.out.println("funct name::"+f.getName());
 				throw new InvalidInputException("You already have an function named that");
@@ -90,7 +103,7 @@ public class Function implements Serializable{
 	 * @param numberOfArgs the amount of args that the user added to the formula, needs to between 1 and 4
 	 * @throws InvalidInputException
 	 */
-	public Function(String name, String formula) throws InvalidInputException{
+	public UserFunction(String name, String formula) throws InvalidInputException{
 		//make sure that the name and formula are not null
 		if(name == null)
 			throw new InvalidInputException("Please enter a name");
@@ -206,33 +219,34 @@ public class Function implements Serializable{
 		this.numOfArgs = numOfArgs;
 	}
 
+
 	/**
-	 * Solves the function
+	 * Evaluates the function
 	 * @param args arguments to use in the function
 	 * @return the result of the function
-	 * @throws InvalidInputException
+	 * @throws InvalidInputException 
+	 * 
 	 */
-	public String solveFunction(String ...args) throws InvalidInputException{
+	@Override
+	public String eval(ArrayList<String> args) throws InvalidInputException {
+		if(args.size() != numOfArgs) throw new InvalidFunctionUseException(name);
+		
 		String stringToSolve = new String(formula);
-		if(args.length != numOfArgs)
-			throw new InvalidInputException("Invalid Number of Arguments");
-		for (String string : args) {
-			System.out.println("args: "+string);
-		}
+		
 		//add in args
 		switch (numOfArgs) {
 		case 4:
 			while(stringToSolve.contains("(A4)"))
-				stringToSolve = stringToSolve.replace("(A4)", "("+args[3]+")");
+				stringToSolve = stringToSolve.replace("(A4)", "("+args.get(3)+")");
 		case 3:
 			while(stringToSolve.contains("(A3)"))
-				stringToSolve = stringToSolve.replace("(A3)", "("+args[2]+")");	
+				stringToSolve = stringToSolve.replace("(A3)", "("+args.get(2)+")");	
 		case 2:
 			while(stringToSolve.contains("(A2)"))
-				stringToSolve = stringToSolve.replace("(A2)", "("+args[1]+")");
+				stringToSolve = stringToSolve.replace("(A2)", "("+args.get(1)+")");
 		default:
 			while(stringToSolve.contains("(A1)"))
-				stringToSolve = stringToSolve.replace("(A1)", "("+args[0]+")");
+				stringToSolve = stringToSolve.replace("(A1)", "("+args.get(0)+")");
 			break;
 		}
 		System.out.println("with args: "+stringToSolve);
