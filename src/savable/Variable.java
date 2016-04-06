@@ -13,12 +13,20 @@ import BasicCalculator.InvalidInputException;
 
 public class Variable implements Serializable {
 	private static final long serialVersionUID = -5875549222457743023L;
+	
 	//
 	//
 	//STATIC 
 	//map variables
 	private static HashMap<String,String> variables;
+	
+	
+	/**
+	 * Gets the map of all of the variables
+	 * @return
+	 */
 	public static HashMap<String,String> getVariables(){
+		
 		return variables;
 	}
 
@@ -97,6 +105,17 @@ public class Variable implements Serializable {
 			return variables.keySet();
 		else 
 			return null;
+	}
+	
+	/**
+	 * Set a variable that coresponds to the last answer
+	 * @param value
+	 */
+	public static void setLast(String value){
+		if(variables == null){
+			variables = new HashMap<String, String>();
+		}
+		variables.put("last", value);
 	}
 
 	//

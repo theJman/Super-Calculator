@@ -21,11 +21,11 @@ public class HelpMenu extends JMenu{
 		add(about);
 	}
 	public void showHelp(){
-		JOptionPane.showMessageDialog(null, "Welcome to Super Calculator what the stranded computer calculator should be! version .8\n" +
+		JOptionPane.showMessageDialog(null, "Welcome to Super Calculator what the standard computer calculator should be! version 1.0\n" +
 				"~Features~\n-supports all normal functions EX. + - * / % ect.\n-supports powers ex 2^2=4   2E2=2x10^2\n" +
 				"-supports roots ex sqrt(4)=2    root(3,8)=cuberoot8=2\n-supports trig functions ex sin(pi)=0  asin(0)=pi\n" +
-				"-supports logarithms ex log10=1  lne=1\n-supports parentheses ex 2+((1+1)(8-6))=6  sqrt(2+2)=4\n" +
-				"-smart text field\n-you can create variables and use them ex b=3 then b+1=4    foo= (9-1)*2 then foo-1=15\n" +
+				"-supports logarithms ex log10=1 logb(2,10) = \"log base 2 of 10\"  lne=1\n-supports parentheses ex 2+((1+1)(8-6))=6  sqrt(2+2)=4\n" +
+				"-smart text field\n-you can create variables and use them ex b=3 then \"b+1\" = 4    foo= (9-1)*2 then foo-1=15\n" +
 				"-see all of your variables by typeing \"mem\"\n-a label that displays the previous calculation\n" +
 				"-you can go back and view previous calculations with up/down arrow keys\n" +
 				"-press enter with a blank text box and the function in the label will be put into the text box\n" +

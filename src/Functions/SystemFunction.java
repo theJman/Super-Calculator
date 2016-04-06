@@ -141,16 +141,7 @@ public abstract class SystemFunction implements NamedFunction {
 			}
 		});
 		
-		functions.add(new SystemFunction("e",0) {
-			@Override
-			public String eval(ArrayList<String> args) throws InvalidInputException {
-				checkArgs(args);
-				String ans = ""+Math.E;
-				return ans;
-			}
-		});
-
-
+		
 		
 		return functions;
 	}

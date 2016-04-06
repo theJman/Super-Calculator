@@ -203,6 +203,7 @@ public class CalculatorPanel extends JPanel {
 				updateMenuBar();
 				return;
 			}
+			/*
 			//replace "last" with last answer
 			if(string.contains("last")){
 				if(lastValue == null)
@@ -215,6 +216,7 @@ public class CalculatorPanel extends JPanel {
 					string = lastValue + string.substring(index+4);
 				}
 			}
+			*/
 			String original = new String(string);
 			
 			//remove spaces
@@ -269,7 +271,8 @@ public class CalculatorPanel extends JPanel {
 			System.out.println("FINAL: "+answer);
 			string = string + " = " + answer;
 			setTextField("");
-			lastValue = answer;
+			//lastValue = answer;
+			Variable.setLast(answer);
 			history.setAnswer(answer);
 			if (!history.getText().contains("Error")) {
 				display(original+" = "+answer,false);

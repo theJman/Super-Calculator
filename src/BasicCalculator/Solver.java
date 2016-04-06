@@ -133,7 +133,7 @@ public class Solver {
 				continue;
 			if(index>0 && !Character.isLetter(string.charAt(index-1)) && index<string.length()-2 && !Character.isLetter(string.charAt(index+1)))
 				string = string.substring(0,index) + Math.E + string.substring(index+1);
-			else if(index==0 && !Character.isLetter(string.charAt(index+1)))
+			else if(index==0 && (string.length() == 1 || !Character.isLetter(string.charAt(index+1))))
 				string = string.substring(0,index) + Math.E + string.substring(index+1);
 			else if(index==string.length()-1 && !Character.isLetter(string.charAt(index-1)))
 				string = string.substring(0,index) + Math.E + string.substring(index+1);
