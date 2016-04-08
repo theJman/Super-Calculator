@@ -105,16 +105,15 @@ public class UserFunction implements Serializable, Functions.NamedFunction{
 	 */
 	public UserFunction(String name, String formula) throws InvalidInputException{
 		//make sure that the name and formula are not null
-		if(name == null)
+		if(name == null || name.length() == 0)
 			throw new InvalidInputException("Please enter a name");
-		if(formula == null)
+		if(formula == null || formula.length() == 0)
 			throw new InvalidInputException("Please enter a formula");
 		//check to make sure there are no spaces in the name
 		if(name.contains(" "))
 			throw new InvalidInputException("The name can't contain spaces");
 		//take that spaces out of the formula
 		while(formula.contains(" ")){
-			
 			int index = formula.indexOf(" ");
 			System.out.println(index);
 			

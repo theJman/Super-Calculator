@@ -182,10 +182,9 @@ public class CalcTextField extends JTextField {
 				case KeyEvent.VK_DELETE:
 					//delete end paren
 					//find the correct paren and remove it
-					System.out.println("Text: " + getText());
-					if(getCaretPosition() > 0 && getText().charAt(getCaretPosition()-1) == '(')
+					String text = getText();
+					if(getCaretPosition() > 0 && text.charAt(getCaretPosition()-1) == '(')
 					{
-						String text = getText();
 						int count = 0;
 						int indexToRemove = -1;
 						for(int i = getCaretPosition(); i < text.length(); i++){
@@ -203,10 +202,18 @@ public class CalcTextField extends JTextField {
 						}
 						if(indexToRemove != -1){
 							System.out.println("need to remove");
+							//check if we just have cammas in the parenthesis and if so delete them
+							boolean shouldDeleteCommas = true;
+							for(int i = getCaretPosition()+1; i < indexToRemove;i++){
+								if(text.charAt(i) != ',')shouldDeleteCommas = false;
+							}
+							int startDelete = indexToRemove;
+							if(shouldDeleteCommas)startDelete = getCaretPosition();
+							//remove
 							if(text.length() > indexToRemove+1)
-								text = text.substring(0, indexToRemove) + text.substring(indexToRemove+1);
+								text = text.substring(0, startDelete) + text.substring(indexToRemove+1);
 							else
-								text = text.substring(0, indexToRemove);
+								text = text.substring(0, startDelete);
 							int tempCar = getCaretPosition();
 							setText(text);
 							setCaretPosition(tempCar);
