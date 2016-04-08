@@ -113,12 +113,13 @@ public class CalcTextField extends JTextField {
 					for(NamedFunction funct : UserFunction.getAllFunctions()){
 						if(text.contains(funct.getName())){
 							//check to see if we are at the function name
-							if(text.indexOf(funct.getName()) == getCaretPosition()-(funct.getName().length())){
+							int index = text.indexOf(funct.getName(), caretPos-funct.getName().length());
+
+							if(index == getCaretPosition()-(funct.getName().length())){
 								//check to make sure it isn't part of another word
-								int index = text.indexOf(funct.getName());
 								
 								//check to make sure that we haven't already inserted a paren
-								if(index+funct.getName().length() < text.length() && text.charAt(index+funct.getName().length()) == '(')
+								if( index+funct.getName().length() < text.length() && text.charAt(index+funct.getName().length()) == '(')
 									continue;
 								
 								//don't auto paren if it is
@@ -127,7 +128,7 @@ public class CalcTextField extends JTextField {
 								if (e.getKeyCode() != KeyEvent.VK_BACK_SPACE){
 									System.out.println("Just typed function name");
 									//insert parens
-									caretPos += 2;
+									caretPos += 1;
 									switch (funct.getNumOfArgs()) {
 									case 1:
 										setText(text.substring(0, getCaretPosition())+"()"+text.substring(getCaretPosition()));
@@ -146,7 +147,7 @@ public class CalcTextField extends JTextField {
 										setText(text.substring(0, getCaretPosition())+"()"+text.substring(getCaretPosition()));
 										break;
 									}
-									setCaretPosition(caretPos-1);
+									setCaretPosition(caretPos);
 								}
 							}
 						}
